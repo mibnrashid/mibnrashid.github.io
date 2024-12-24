@@ -96,6 +96,7 @@ def calculate_and_show_results():
     min_total, max_total = calculate_total(grades)
     result_html = f"""
         <br>
+        <h2>طبعا الدرجة بتتغير مع الأفرج والابقريد ونحو ذلك هذه فقط درحة مبدئية</h2>
         <h2>The Range of your Points are:</h2>
         <p><strong>Minimum Total:</strong> {min_total:.2f} (أقل درجة ممكن تجيبها)</p>
         <p><strong>Maximum Total:</strong> {max_total:.2f} (أعلى درجة ممكن تجيبها)</p>
@@ -110,7 +111,7 @@ def calculate_and_show_results():
         <h3>C:70-74 </h3>
         <h3>D+:65-69 </h3>
         <h3>D:60-64 </h3>
-        <h3>F:0-60 </h3>
+        <h3>F:0-59 </h3>
     """
     document["formContainer"].html = ""  # Clear input box
     document["results"].html = result_html
