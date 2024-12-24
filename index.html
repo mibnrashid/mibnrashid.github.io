@@ -3,23 +3,31 @@
 <head>
     <title>Grade Calculator</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        #inputBox, #results {
+            margin-top: 20px;
+        }
+        button {
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body onload="brython()">
-    <h1>Grade Calculator</h1>
-
-    <form id="gradeForm">
-        <label>Writing 1:</label> <input type="text" id="writing1" value="A"><br>
-        <label>Writing 2:</label> <input type="text" id="writing2" value="B+"><br>
-        <label>Midterm:</label> <input type="text" id="midterm" value="B"><br>
-        <label>Final Writing:</label> <input type="text" id="finalWriting" value="A"><br>
-        <label>Final Reading-Vocab-Grammar:</label> <input type="text" id="finalOverall" value="C+"><br>
-        <button type="button" id="calculateBtn">Calculate Grades</button>
-    </form>
-
+    <h1>Interactive Grade Calculator</h1>
+    <div id="inputBox"></div>
     <div id="results"></div>
-
     <script type="text/python">
-from browser import document, html
+from browser import document, html, alert
+
+grades = {}
+grade_order = [
+    'Writing1', 'Writing2', 'Midterm', 'Final Writing', 'Final Overall Reading-Vocabulary-Grammar'
+]
+current_index = 0
 
 def calculate_grade_range(grade):
     grade_mapping = {
@@ -51,14 +59,42 @@ def calculate_total(grades):
         total_max += max_grade * weights[part]
     return total_min, total_max
 
-def main(ev):
-    grades = {
-        'Writing1': document["writing1"].value.upper(),
-        'Writing2': document["writing2"].value.upper(),
-        'Midterm': document["midterm"].value.upper(),
-        'Final Writing': document["finalWriting"].value.upper(),
-        'Final Overall Reading-Vocabulary-Grammar': document["finalOverall"].value.upper()
-    }
-    
+def ask_for_grade():
+    global current_index
+    if current_index < len(grade_order):
+        part = grade_order[current_index]
+        document["inputBox"].html = f"""
+            <label>Enter grade for <strong>{part}</strong>:</label>
+            <input type='text' id='gradeInput'>
+            <button id='submitGrade'>Submit</button>
+        """
+        document["submitGrade"].bind("click", save_grade)
+    else:
+        calculate_and_show_results()
+
+def save_grade(event):
+    global current_index
+    part = grade_order[current_index]
+    grade = document["gradeInput"].value.upper()
+    if grade in ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']:
+        grades[part] = grade
+        current_index += 1
+        ask_for_grade()
+    else:
+        alert("Invalid grade! Please enter A+, A, B+, B, C+, C, D+, D, or F.")
+
+def calculate_and_show_results():
     min_total, max_total = calculate_total(grades)
-    result = f
+    result_html = f"""
+        <h2>Results</h2>
+        <p><strong>Minimum Total:</strong> {min_total:.2f}</p>
+        <p><strong>Maximum Total:</strong> {max_total:.2f}</p>
+    """
+    document["inputBox"].html = ""  # Clear input box
+    document["results"].html = result_html
+
+# Start asking for grades when page loads
+ask_for_grade()
+    </script>
+</body>
+</html>
