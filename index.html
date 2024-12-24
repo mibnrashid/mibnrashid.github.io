@@ -8,20 +8,37 @@
             font-family: Arial, sans-serif;
             margin: 40px;
         }
-        #inputBox, #results {
+        #formContainer, #results {
             margin-top: 20px;
         }
-        button {
+        label {
+            display: block;
             margin-top: 10px;
+        }
+        input {
+            margin: 5px 0;
+            padding: 5px;
+            width: 100%;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
 <body onload="brython()">
     <h1>Interactive Grade Calculator</h1>
     
-    <button id="startBtn">Start Calculation</button>
-    
-    <div id="inputBox"></div>
+    <div id="formContainer">
+        <button id="startBtn">Start Calculation</button>
+    </div>
     <div id="results"></div>
 
     <script type="text/python">
@@ -31,7 +48,6 @@ grades = {}
 grade_order = [
     'Writing1', 'Writing2', 'Midterm', 'Final Writing', 'Final Overall Reading-Vocabulary-Grammar'
 ]
-current_index = 0
 
 def calculate_grade_range(grade):
     grade_mapping = {
@@ -63,54 +79,41 @@ def calculate_total(grades):
         total_max += max_grade * weights[part]
     return total_min, total_max
 
-def ask_for_grade():
-    global current_index
-    if current_index < len(grade_order):
-        part = grade_order[current_index]
-        document["inputBox"].html = f"""
-            <label>Enter grade for <strong>{part}</strong>:</label>
-            <input type='text' id='gradeInput'>
-            <button id='submitGrade'>Submit</button>
-        """
-        document["submitGrade"].bind("click", save_grade)
-    else:
-        calculate_and_show_results()
-
-def save_grade(event):
-    global current_index
-    part = grade_order[current_index]
-    grade = document["gradeInput"].value.upper()
-    
-    # Grade validation
-    if grade in ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']:
+def validate_and_save(event):
+    inputs = document.select("input.gradeInput")
+    global grades
+    for input_field in inputs:
+        part = input_field.name
+        grade = input_field.value.upper()
+        if grade not in ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']:
+            alert(f"Invalid grade for {part}! Please enter a valid grade.")
+            return
         grades[part] = grade
-        current_index += 1
-        ask_for_grade()
-    else:
-        alert("Invalid grade! Please enter A+, A, B+, B, C+, C, D+, D, or F.")
+    calculate_and_show_results()
 
 def calculate_and_show_results():
     min_total, max_total = calculate_total(grades)
-    
     result_html = f"""
         <h2>Results</h2>
         <p><strong>Minimum Total:</strong> {min_total:.2f}</p>
         <p><strong>Maximum Total:</strong> {max_total:.2f}</p>
     """
-    document["inputBox"].html = ""  # Clear input box
+    document["formContainer"].html = ""  # Clear input box
     document["results"].html = result_html
-    
-    # Reset for new calculation
-    reset_state()
-
-def reset_state():
-    global grades, current_index
-    grades = {}
-    current_index = 0
 
 def start_process(ev):
-    document["startBtn"].remove()  # Remove the start button
-    ask_for_grade()
+    form_html = "<h2>Enter Grades</h2><form id='gradeForm'>"
+    for part in grade_order:
+        form_html += f"""
+            <label for='{part}'>{part}:</label>
+            <input type='text' id='{part}' name='{part}' class='gradeInput'>
+        """
+    form_html += """
+        <button type='button' id='submitGrades'>Calculate</button>
+    </form>
+    """
+    document["formContainer"].html = form_html
+    document["submitGrades"].bind("click", validate_and_save)
 
 # Bind the start button to begin the process
 document["startBtn"].bind("click", start_process)
