@@ -6,8 +6,20 @@
 </head>
 <body onload="brython()">
     <h1>Grade Calculator</h1>
+
+    <form id="gradeForm">
+        <label>Writing 1:</label> <input type="text" id="writing1" value="A"><br>
+        <label>Writing 2:</label> <input type="text" id="writing2" value="B+"><br>
+        <label>Midterm:</label> <input type="text" id="midterm" value="B"><br>
+        <label>Final Writing:</label> <input type="text" id="finalWriting" value="A"><br>
+        <label>Final Reading-Vocab-Grammar:</label> <input type="text" id="finalOverall" value="C+"><br>
+        <button type="button" id="calculateBtn">Calculate Grades</button>
+    </form>
+
+    <div id="results"></div>
+
     <script type="text/python">
-from browser import document, html, prompt
+from browser import document, html
 
 def calculate_grade_range(grade):
     grade_mapping = {
@@ -40,16 +52,13 @@ def calculate_total(grades):
     return total_min, total_max
 
 def main(ev):
-    grades = {}
-    for part in ['Writing1', 'Writing2', 'Midterm', 'Final Writing', 'Final Overall Reading-Vocabulary-Grammar']:
-        grade = prompt(f"Enter grade for {part}: ").upper()
-        grades[part] = grade
+    grades = {
+        'Writing1': document["writing1"].value.upper(),
+        'Writing2': document["writing2"].value.upper(),
+        'Midterm': document["midterm"].value.upper(),
+        'Final Writing': document["finalWriting"].value.upper(),
+        'Final Overall Reading-Vocabulary-Grammar': document["finalOverall"].value.upper()
+    }
     
     min_total, max_total = calculate_total(grades)
-    result = f"\nMinimum possible total: {min_total:.2f}\nMaximum possible total: {max_total:.2f}"
-    document <= html.P(result)
-
-document <= html.BUTTON("Calculate Grades", onclick=main)
-    </script>
-</body>
-</html>
+    result = f
