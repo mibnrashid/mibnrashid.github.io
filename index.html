@@ -69,6 +69,7 @@
     <script type="text/python">
 from browser import document, html, alert
 
+# Grade range mapping
 def calculate_grade_range(grade):
     grade_mapping = {
         'A+': (93, 100),
@@ -83,6 +84,7 @@ def calculate_grade_range(grade):
     }
     return grade_mapping.get(grade, (0, 0))
 
+# Total grade calculation
 def calculate_total(grades):
     weights = {
         'Writing1': 0.15,
@@ -94,6 +96,7 @@ def calculate_total(grades):
     total_min = 0
     total_max = 0
     
+    # Calculate totals based on weights and grade ranges
     for part, grade in grades.items():
         min_grade, max_grade = calculate_grade_range(grade)
         total_min += min_grade * weights[part]
@@ -101,21 +104,21 @@ def calculate_total(grades):
     
     return total_min, total_max
 
+# Function to process grades
 def calculate_grades(event):
-    form_data = document['gradeForm']
     grades = {}
     valid_grades = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']
 
-    for part in form_data:
-        grade = part.value.upper()
-        if grade not in valid_grades:
-            alert(f"Invalid grade for {part.name}. Please enter A+, A, B+, B, C+, C, D+, D, or F.")
+    # Collect all input grades from the form
+    for part in ['Writing1', 'Writing2', 'Midterm', 'Final Writing', 'Final Overall Reading-Vocabulary-Grammar']:
+        grade_input = document[f'{part}'].value.upper()  # Access input values directly
+        if grade_input not in valid_grades:
+            alert(f"Invalid grade for {part}. Please enter A+, A, B+, B, C+, C, D+, D, or F.")
             return
-        grades[part.name] = grade
+        grades[part] = grade_input
     
+    # Calculate and display results
     min_total, max_total = calculate_total(grades)
-    
-    # Display results in a card format
     result_html = f"""
         <div class="result-card">
             <h2>Results</h2>
@@ -125,6 +128,7 @@ def calculate_grades(event):
     """
     document["results"].html = result_html
 
+# Bind the button to calculate grades
 document["calculateBtn"].bind("click", calculate_grades)
     </script>
 </body>
