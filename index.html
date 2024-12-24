@@ -18,8 +18,12 @@
 </head>
 <body onload="brython()">
     <h1>Interactive Grade Calculator</h1>
+    
+    <button id="startBtn">Start Calculation</button>
+    
     <div id="inputBox"></div>
     <div id="results"></div>
+
     <script type="text/python">
 from browser import document, html, alert
 
@@ -76,6 +80,8 @@ def save_grade(event):
     global current_index
     part = grade_order[current_index]
     grade = document["gradeInput"].value.upper()
+    
+    # Grade validation
     if grade in ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']:
         grades[part] = grade
         current_index += 1
@@ -85,6 +91,7 @@ def save_grade(event):
 
 def calculate_and_show_results():
     min_total, max_total = calculate_total(grades)
+    
     result_html = f"""
         <h2>Results</h2>
         <p><strong>Minimum Total:</strong> {min_total:.2f}</p>
@@ -92,9 +99,21 @@ def calculate_and_show_results():
     """
     document["inputBox"].html = ""  # Clear input box
     document["results"].html = result_html
+    
+    # Reset for new calculation
+    reset_state()
 
-# Start asking for grades when page loads
-ask_for_grade()
+def reset_state():
+    global grades, current_index
+    grades = {}
+    current_index = 0
+
+def start_process(ev):
+    document["startBtn"].remove()  # Remove the start button
+    ask_for_grade()
+
+# Bind the start button to begin the process
+document["startBtn"].bind("click", start_process)
     </script>
 </body>
 </html>
