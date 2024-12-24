@@ -5,33 +5,69 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
+            font-family: 'Arial', sans-serif;
+            margin: 50px;
+            text-align: center;
         }
-        #inputBox, #results {
-            margin-top: 20px;
+        #inputBox {
+            margin-top: 30px;
+        }
+        input {
+            margin: 10px 0;
+            padding: 8px;
+            font-size: 16px;
+            width: 250px;
         }
         button {
-            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        #results {
+            margin-top: 40px;
+        }
+        .result-card {
+            display: inline-block;
+            padding: 20px;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: left;
         }
     </style>
 </head>
 <body onload="brython()">
-    <h1>Interactive Grade Calculator</h1>
+    <h1>Grade Calculator</h1>
     
-    <button id="startBtn">Start Calculation</button>
+    <div id="inputBox">
+        <p>Enter grades (A+, A, B+, etc.) for each category:</p>
+        <form id="gradeForm">
+            <label>Writing 1:</label><br>
+            <input type="text" name="Writing1"><br>
+            
+            <label>Writing 2:</label><br>
+            <input type="text" name="Writing2"><br>
+            
+            <label>Midterm:</label><br>
+            <input type="text" name="Midterm"><br>
+            
+            <label>Final Writing:</label><br>
+            <input type="text" name="Final Writing"><br>
+            
+            <label>Final Overall Reading-Vocabulary-Grammar:</label><br>
+            <input type="text" name="Final Overall Reading-Vocabulary-Grammar"><br>
+            
+            <button type="button" id="calculateBtn">Calculate Grades</button>
+        </form>
+    </div>
     
-    <div id="inputBox"></div>
     <div id="results"></div>
 
     <script type="text/python">
 from browser import document, html, alert
-
-grades = {}
-grade_order = [
-    'Writing1', 'Writing2', 'Midterm', 'Final Writing', 'Final Overall Reading-Vocabulary-Grammar'
-]
-current_index = 0
 
 def calculate_grade_range(grade):
     grade_mapping = {
@@ -57,63 +93,39 @@ def calculate_total(grades):
     }
     total_min = 0
     total_max = 0
+    
     for part, grade in grades.items():
         min_grade, max_grade = calculate_grade_range(grade)
         total_min += min_grade * weights[part]
         total_max += max_grade * weights[part]
+    
     return total_min, total_max
 
-def ask_for_grade():
-    global current_index
-    if current_index < len(grade_order):
-        part = grade_order[current_index]
-        document["inputBox"].html = f"""
-            <label>Enter grade for <strong>{part}</strong>:</label>
-            <input type='text' id='gradeInput'>
-            <button id='submitGrade'>Submit</button>
-        """
-        document["submitGrade"].bind("click", save_grade)
-    else:
-        calculate_and_show_results()
+def calculate_grades(event):
+    form_data = document['gradeForm']
+    grades = {}
+    valid_grades = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']
 
-def save_grade(event):
-    global current_index
-    part = grade_order[current_index]
-    grade = document["gradeInput"].value.upper()
+    for part in form_data:
+        grade = part.value.upper()
+        if grade not in valid_grades:
+            alert(f"Invalid grade for {part.name}. Please enter A+, A, B+, B, C+, C, D+, D, or F.")
+            return
+        grades[part.name] = grade
     
-    # Grade validation
-    if grade in ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']:
-        grades[part] = grade
-        current_index += 1
-        ask_for_grade()
-    else:
-        alert("Invalid grade! Please enter A+, A, B+, B, C+, C, D+, D, or F.")
-
-def calculate_and_show_results():
     min_total, max_total = calculate_total(grades)
     
+    # Display results in a card format
     result_html = f"""
-        <h2>Results</h2>
-        <p><strong>Minimum Total:</strong> {min_total:.2f}</p>
-        <p><strong>Maximum Total:</strong> {max_total:.2f}</p>
+        <div class="result-card">
+            <h2>Results</h2>
+            <p><strong>Minimum Total:</strong> {min_total:.2f}</p>
+            <p><strong>Maximum Total:</strong> {max_total:.2f}</p>
+        </div>
     """
-    document["inputBox"].html = ""  # Clear input box
     document["results"].html = result_html
-    
-    # Reset for new calculation
-    reset_state()
 
-def reset_state():
-    global grades, current_index
-    grades = {}
-    current_index = 0
-
-def start_process(ev):
-    document["startBtn"].remove()  # Remove the start button
-    ask_for_grade()
-
-# Bind the start button to begin the process
-document["startBtn"].bind("click", start_process)
+document["calculateBtn"].bind("click", calculate_grades)
     </script>
 </body>
 </html>
