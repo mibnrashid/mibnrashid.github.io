@@ -95,15 +95,19 @@ def validate_and_save(event):
 def calculate_and_show_results():
     min_total, max_total = calculate_total(grades)
     result_html = f"""
-        <h2>Results</h2>
-        <p><strong>Minimum Total:</strong> {min_total:.2f}</p>
-        <p><strong>Maximum Total:</strong> {max_total:.2f}</p>
+        <br>
+        <h2>The Range of your Points are:</h2>
+        <p><strong>Minimum Total:</strong> {min_total:.2f} (أقل درجة ممكن تجيبها)</p>
+        <p><strong>Maximum Total:</strong> {max_total:.2f} (أعلى درجة ممكن تجيبها)</p>
+        <h1>وفقكم الله دعواتكم</h1>
+        <br>
+        <h3> A+:93-100 A:90-92 B+:85-89 B:80-84 C+:75-79 C:70-74 D+:65-69 D:60-64 F:0-60</h3>
     """
     document["formContainer"].html = ""  # Clear input box
     document["results"].html = result_html
 
 def start_process(ev):
-    form_html = "<h2>Enter Grades</h2><form id='gradeForm'>"
+    form_html = "<h2>Enter Your English 101 Grades</h2><form id='gradeForm'>"
     for part in grade_order:
         form_html += f"""
             <label for='{part}'>{part}:</label>
