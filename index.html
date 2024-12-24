@@ -46,19 +46,19 @@
         <p>Enter grades (A+, A, B+, etc.) for each category:</p>
         <form id="gradeForm">
             <label>Writing 1:</label><br>
-            <input type="text" name="Writing1"><br>
+            <input type="text" id="Writing1"><br>
             
             <label>Writing 2:</label><br>
-            <input type="text" name="Writing2"><br>
+            <input type="text" id="Writing2"><br>
             
             <label>Midterm:</label><br>
-            <input type="text" name="Midterm"><br>
+            <input type="text" id="Midterm"><br>
             
             <label>Final Writing:</label><br>
-            <input type="text" name="Final Writing"><br>
+            <input type="text" id="FinalWriting"><br>
             
             <label>Final Overall Reading-Vocabulary-Grammar:</label><br>
-            <input type="text" name="Final Overall Reading-Vocabulary-Grammar"><br>
+            <input type="text" id="FinalReadingGrammar"><br>
             
             <button type="button" id="calculateBtn">Calculate Grades</button>
         </form>
@@ -90,8 +90,8 @@ def calculate_total(grades):
         'Writing1': 0.15,
         'Writing2': 0.15,
         'Midterm': 0.25,
-        'Final Writing': 0.25,
-        'Final Overall Reading-Vocabulary-Grammar': 0.20
+        'FinalWriting': 0.25,
+        'FinalReadingGrammar': 0.20
     }
     total_min = 0
     total_max = 0
@@ -109,8 +109,8 @@ def calculate_grades(event):
     grades = {}
     valid_grades = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']
 
-    # Collect all input grades from the form
-    for part in ['Writing1', 'Writing2', 'Midterm', 'Final Writing', 'Final Overall Reading-Vocabulary-Grammar']:
+    # Collect all input grades from the form using correct IDs
+    for part in ['Writing1', 'Writing2', 'Midterm', 'FinalWriting', 'FinalReadingGrammar']:
         grade_input = document[f'{part}'].value.upper()  # Access input values directly
         if grade_input not in valid_grades:
             alert(f"Invalid grade for {part}. Please enter A+, A, B+, B, C+, C, D+, D, or F.")
