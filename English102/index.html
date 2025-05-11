@@ -58,6 +58,10 @@
         .back-btn:hover {
             background-color: #0056b3;
         }
+        .grade-line {
+            text-align: center;
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body onload="brython()">
@@ -121,26 +125,36 @@ def calculate_and_show_results():
     min_total, max_total = calculate_total(grades)
     result_html = f"""
         <br>
-        <h2>طبعا الدرجة بتتغير مع الأفرج والابقريد ونحو ذلك - هذه فقط درجة مبدئية</h2>
         <h2>The Range of your Points:</h2>
-        <p><strong>Minimum Total:</strong> {min_total:.2f} (أقل درجة ممكن تجيبها)</p>
-        <p><strong>Maximum Total:</strong> {max_total:.2f} (أعلى درجة ممكن تجيبها)</p>
+        <p><strong>Minimum Total:</strong> <strong>{min_total:.2f}</strong> (أقل درجة ممكن تجيبها)</p>
+        <p><strong>Maximum Total:</strong> <strong>{max_total:.2f}</strong> (أعلى درجة ممكن تجيبها)</p>
         <br>
-        <h1>وفقكم الله دعواتكم 🤍🫡</h1>
+        <div class='grade-line'><b>A+</b>: 93-100</div>
+        <div class='grade-line'><b>A</b>: 90-92</div>
+        <div class='grade-line'><b>B+</b>: 85-89</div>
+        <div class='grade-line'><b>B</b>: 80-84</div>
+        <div class='grade-line'><b>C+</b>: 75-79</div>
+        <div class='grade-line'><b>C</b>: 70-74</div>
+        <div class='grade-line'><b>D+</b>: 65-69</div>
+        <div class='grade-line'><b>D</b>: 60-64</div>
+        <div class='grade-line'><b>F</b>: 0-59</div>
         <br>
-        <h3>A+:93-100 | A:90-92 | B+:85-89 | B:80-84 | C+:75-79 | C:70-74 | D+:65-69 | D:60-64 | F:0-59</h3>
+        <h3>طبعا الدرجة بتتغير مع الأفرج والابقريد ونحو ذلك - هذه فقط درجة مبدئية</h3>
         <button class='back-btn' id='editGrades'>Go Back & Edit Grades</button>
+        <br><br>
+        <h2>وفقكم الله دعواتكم 🤍🫡</h2>
     """
     document["formContainer"].html = ""
     document["results"].html = result_html
-    document["editGrades"].bind("click", start_process)
+    document["editGrades"].bind("click", lambda ev: start_process(True))
 
-def start_process(ev=None):
+def start_process(preserve=False):
     form_html = "<h2>Enter Your English 102 Grades</h2><form id='gradeForm'>"
     for part in grade_order:
+        current_value = grades.get(part, "") if preserve else ""
         form_html += f"""
             <label for='{part}'>{part}:</label>
-            <input type='text' id='{part}' name='{part}' class='gradeInput'>
+            <input type='text' id='{part}' name='{part}' class='gradeInput' value='{current_value}'>
         """
     form_html += """
         <button type='button' id='submitGrades'>Calculate</button>
@@ -150,7 +164,7 @@ def start_process(ev=None):
     document["results"].html = ""
     document["submitGrades"].bind("click", validate_and_save)
 
-document["startBtn"].bind("click", start_process)
+document["startBtn"].bind("click", lambda ev: start_process(False))
     </script>
 </body>
 </html>
