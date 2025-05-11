@@ -5,42 +5,71 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 40px;
+            background-color: #f9f9f9;
+            color: #333;
         }
-        #formContainer, #results {
-            margin-top: 20px;
+        h1, h2, h3 {
+            text-align: center;
+        }
+        a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        #container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
         }
         label {
             display: block;
-            margin-top: 10px;
+            margin-top: 15px;
+            font-weight: bold;
         }
         input {
-            margin: 5px 0;
-            padding: 5px;
             width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
         }
         button {
-            margin-top: 20px;
-            padding: 10px 20px;
+            margin-top: 25px;
+            padding: 12px 20px;
             background-color: #4CAF50;
             color: white;
             border: none;
+            border-radius: 6px;
             cursor: pointer;
+            width: 100%;
+            font-size: 16px;
         }
         button:hover {
             background-color: #45a049;
         }
+        .back-btn {
+            background-color: #007BFF;
+            margin-top: 15px;
+        }
+        .back-btn:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body onload="brython()">
-    <h1>English 102 Points Calculator 🟰</h1>
-    <h1><a href="https://x.com/Ice_Ninja5">Programmed by Ice❄️</a></h1>
+    <div id="container">
+        <h1>English 102 Points Calculator 🟰</h1>
+        <h2><a href="https://x.com/Ice_Ninja5" target="_blank">Programmed by Ice❄️</a></h2>
 
-    <div id="formContainer">
-        <button id="startBtn">Start Calculation</button>
+        <div id="formContainer">
+            <button id="startBtn">Start Calculation</button>
+        </div>
+        <div id="results"></div>
     </div>
-    <div id="results"></div>
 
     <script type="text/python">
 from browser import document, html, alert
@@ -56,46 +85,32 @@ grade_order = [
 
 def calculate_grade_range(grade):
     grade_mapping = {
-        'A+': (93, 100),
-        'A': (90, 92),
-        'B+': (85, 89),
-        'B': (80, 84),
-        'C+': (75, 79),
-        'C': (70, 74),
-        'D+': (65, 69),
-        'D': (60, 64),
-        'F': (0, 59)
+        'A+': (93, 100), 'A': (90, 92), 'B+': (85, 89), 'B': (80, 84),
+        'C+': (75, 79), 'C': (70, 74), 'D+': (65, 69), 'D': (60, 64), 'F': (0, 59)
     }
     return grade_mapping.get(grade, (0, 0))
 
 def calculate_total(grades):
     weights = {
-        'Reading Quiz 1': 0.05,
-        'Reading Quiz 2': 0.05,
-        'Writing Task 1 - Draft 1': 0.05,
-        'Writing Task 1 - Final Draft': 0.05,
-        'Writing Task 2 - Draft 1': 0.075,
-        'Writing Task 2 - Final Draft': 0.075,
-        'Writing Task 3 - Draft 1': 0.075,
-        'Writing Task 3 - Final Draft': 0.075,
-        'Presentation': 0.10,
-        'Midterm Exam': 0.25,
-        'Final Exam': 0.15
+        'Reading Quiz 1': 0.05, 'Reading Quiz 2': 0.05,
+        'Writing Task 1 - Draft 1': 0.05, 'Writing Task 1 - Final Draft': 0.05,
+        'Writing Task 2 - Draft 1': 0.075, 'Writing Task 2 - Final Draft': 0.075,
+        'Writing Task 3 - Draft 1': 0.075, 'Writing Task 3 - Final Draft': 0.075,
+        'Presentation': 0.10, 'Midterm Exam': 0.25, 'Final Exam': 0.15
     }
-    total_min = 0
-    total_max = 0
+    total_min = total_max = 0
     for part, grade in grades.items():
-        min_grade, max_grade = calculate_grade_range(grade)
-        total_min += min_grade * weights[part]
-        total_max += max_grade * weights[part]
+        min_g, max_g = calculate_grade_range(grade)
+        total_min += min_g * weights[part]
+        total_max += max_g * weights[part]
     return total_min, total_max
 
 def validate_and_save(event):
     inputs = document.select("input.gradeInput")
     global grades
-    for input_field in inputs:
-        part = input_field.name
-        grade = input_field.value.upper()
+    for field in inputs:
+        part = field.name
+        grade = field.value.upper()
         if grade not in ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']:
             alert(f"Invalid grade for {part}! Please enter a valid grade.")
             return
@@ -106,27 +121,21 @@ def calculate_and_show_results():
     min_total, max_total = calculate_total(grades)
     result_html = f"""
         <br>
-        <h2>طبعا الدرجة بتتغير مع الأفرج والابقريد ونحو ذلك هذه فقط درحة مبدئية</h2>
-        <h2>The Range of your Points are:</h2>
+        <h2>طبعا الدرجة بتتغير مع الأفرج والابقريد ونحو ذلك - هذه فقط درجة مبدئية</h2>
+        <h2>The Range of your Points:</h2>
         <p><strong>Minimum Total:</strong> {min_total:.2f} (أقل درجة ممكن تجيبها)</p>
         <p><strong>Maximum Total:</strong> {max_total:.2f} (أعلى درجة ممكن تجيبها)</p>
         <br>
         <h1>وفقكم الله دعواتكم 🤍🫡</h1>
         <br>
-        <h3>A+:93-100 </h3>
-        <h3>A:90-92 </h3>
-        <h3>B+:85-89 </h3>
-        <h3>B:80-84 </h3>
-        <h3>C+:75-79 </h3>
-        <h3>C:70-74 </h3>
-        <h3>D+:65-69 </h3>
-        <h3>D:60-64 </h3>
-        <h3>F:0-59 </h3>
+        <h3>A+:93-100 | A:90-92 | B+:85-89 | B:80-84 | C+:75-79 | C:70-74 | D+:65-69 | D:60-64 | F:0-59</h3>
+        <button class='back-btn' id='editGrades'>Go Back & Edit Grades</button>
     """
-    document["formContainer"].html = ""  # Clear input box
+    document["formContainer"].html = ""
     document["results"].html = result_html
+    document["editGrades"].bind("click", start_process)
 
-def start_process(ev):
+def start_process(ev=None):
     form_html = "<h2>Enter Your English 102 Grades</h2><form id='gradeForm'>"
     for part in grade_order:
         form_html += f"""
@@ -138,9 +147,9 @@ def start_process(ev):
     </form>
     """
     document["formContainer"].html = form_html
+    document["results"].html = ""
     document["submitGrades"].bind("click", validate_and_save)
 
-# Bind the start button to begin the process
 document["startBtn"].bind("click", start_process)
     </script>
 </body>
