@@ -35,10 +35,10 @@
 </head>
 <body onload="brython()">
     <h1>English 102 Points Calculator 🟰</h1>
-    <h1> <a href="https://x.com/Ice_Ninja5">Programmed by Ice❄️</a> </h1>
-    
+    <h1><a href="https://x.com/Ice_Ninja5">Programmed by Ice❄️</a></h1>
+
     <div id="formContainer">
-        <button id="startBtn">Start Calculation</button> <!-- Corrected the ID here -->
+        <button id="startBtn">Start Calculation</button>
     </div>
     <div id="results"></div>
 
@@ -72,11 +72,11 @@ def calculate_total(grades):
     weights = {
         'Reading Quiz 1': 0.05,
         'Reading Quiz 2': 0.05,
-        'Writing Task 1 - Draft 1': 0.05,  # 10% total for Writing Task 1
+        'Writing Task 1 - Draft 1': 0.05,
         'Writing Task 1 - Final Draft': 0.05,
-        'Writing Task 2 - Draft 1': 0.075,  # 15% total for Writing Task 2
+        'Writing Task 2 - Draft 1': 0.075,
         'Writing Task 2 - Final Draft': 0.075,
-        'Writing Task 3 - Draft 1': 0.075,  # 15% total for Writing Task 3
+        'Writing Task 3 - Draft 1': 0.075,
         'Writing Task 3 - Final Draft': 0.075,
         'Presentation': 0.10,
         'Midterm Exam': 0.25,
@@ -106,10 +106,22 @@ def calculate_and_show_results():
     min_total, max_total = calculate_total(grades)
     result_html = f"""
         <br>
-        <h2>These calculations are based on estimated values</h2>
+        <h2>طبعا الدرجة بتتغير مع الأفرج والابقريد ونحو ذلك هذه فقط درحة مبدئية</h2>
         <h2>The Range of your Points are:</h2>
-        <p><strong>Minimum Total:</strong> {min_total:.2f}</p>
-        <p><strong>Maximum Total:</strong> {max_total:.2f}</p>
+        <p><strong>Minimum Total:</strong> {min_total:.2f} (أقل درجة ممكن تجيبها)</p>
+        <p><strong>Maximum Total:</strong> {max_total:.2f} (أعلى درجة ممكن تجيبها)</p>
+        <br>
+        <h1>وفقكم الله دعواتكم 🤍🫡</h1>
+        <br>
+        <h3>A+:93-100 </h3>
+        <h3>A:90-92 </h3>
+        <h3>B+:85-89 </h3>
+        <h3>B:80-84 </h3>
+        <h3>C+:75-79 </h3>
+        <h3>C:70-74 </h3>
+        <h3>D+:65-69 </h3>
+        <h3>D:60-64 </h3>
+        <h3>F:0-59 </h3>
     """
     document["formContainer"].html = ""  # Clear input box
     document["results"].html = result_html

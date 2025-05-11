@@ -17,11 +17,11 @@ def calculate_total(grades):
     weights = {
         'Reading Quiz 1': 0.05,
         'Reading Quiz 2': 0.05,
-        'Writing Task 1 - Draft 1': 0.05,  # 10% total for Writing Task 1
+        'Writing Task 1 - Draft 1': 0.05,
         'Writing Task 1 - Final Draft': 0.05,
-        'Writing Task 2 - Draft 1': 0.075,  # 15% total for Writing Task 2
+        'Writing Task 2 - Draft 1': 0.075,
         'Writing Task 2 - Final Draft': 0.075,
-        'Writing Task 3 - Draft 1': 0.075,  # 15% total for Writing Task 3
+        'Writing Task 3 - Draft 1': 0.075,
         'Writing Task 3 - Final Draft': 0.075,
         'Presentation': 0.10,
         'Midterm Exam': 0.25,
@@ -41,13 +41,16 @@ def calculate_total(grades):
 
 def main():
     print("Enter your grades (A+, A, B+, etc.) for the following parts:")
-    grades = {}
+    parts = [
+        'Reading Quiz 1', 'Reading Quiz 2',
+        'Writing Task 1 - Draft 1', 'Writing Task 1 - Final Draft',
+        'Writing Task 2 - Draft 1', 'Writing Task 2 - Final Draft',
+        'Writing Task 3 - Draft 1', 'Writing Task 3 - Final Draft',
+        'Presentation', 'Midterm Exam', 'Final Exam'
+    ]
     
-    for part in ['Reading Quiz 1', 'Reading Quiz 2', 
-                'Writing Task 1 - Draft 1', 'Writing Task 1 - Final Draft',
-                'Writing Task 2 - Draft 1', 'Writing Task 2 - Final Draft',
-                'Writing Task 3 - Draft 1', 'Writing Task 3 - Final Draft',
-                'Presentation', 'Midterm Exam', 'Final Exam']:
+    grades = {}
+    for part in parts:
         grade = input(f"{part}: ").upper()
         grades[part] = grade
         
