@@ -167,7 +167,6 @@ def calculate_and_show_results():
     document["editGrades"].bind("click", lambda ev: start_process(True))
 
 def start_process(preserve=False):
-    <br>
     form_html = "<h2>Enter Your English 102 Grades:</h2><form id='gradeForm'><div class='form-grid'>"
     for part in grade_order:
         current_value = grades.get(part, "") if preserve else ""
