@@ -151,9 +151,9 @@ def calculate_and_show_results():
         <p><strong>Maximum Total:</strong> <strong>{max_total:.2f}</strong> (أعلى درجة ممكن تجيبها)</p>
         <br>
         <table class='grade-table'>
-            <tr><td><b>A+</b></td><td>93-100</td><td><b>A</b></td><td>90-92.99</td><td><b>B+</b></td><td>85-89.99</td></tr>
-            <tr><td><b>B</b></td><td>80-84.99</td><td><b>C+</b></td><td>75-79.99</td><td><b>C</b></td><td>70-74.99</td></tr>
-            <tr><td><b>D+</b></td><td>65-69.99</td><td><b>D</b></td><td>60-64.99</td><td><b>F</b></td><td>0-59.99</td></tr>
+            <tr><td><b>A+</b></td><td>93 - 100</td><td><b>A</b></td><td>90 - 92.99</td><td><b>B+</b></td><td>85 - 89.99</td></tr>
+            <tr><td><b>B</b></td><td>80 - 84.99</td><td><b>C+</b></td><td>75 - 79.99</td><td><b>C</b></td><td>70 - 74.99</td></tr>
+            <tr><td><b>D+</b></td><td>65 - 69.99</td><td><b>D</b></td><td>60 - 64.99</td><td><b>F</b></td><td>0 - 59.99</td></tr>
         </table>
         <br>
         <h3>طبعا الدرجة بتتغير مع الأفرج والابقريد ونحو ذلك - هذه فقط درجة مبدئية</h3>
@@ -167,7 +167,8 @@ def calculate_and_show_results():
     document["editGrades"].bind("click", lambda ev: start_process(True))
 
 def start_process(preserve=False):
-    form_html = "<h2>Enter Your English 102 Grades</h2><form id='gradeForm'><div class='form-grid'>"
+    <br>
+    form_html = "<h2>Enter Your English 102 Grades:</h2><form id='gradeForm'><div class='form-grid'>"
     for part in grade_order:
         current_value = grades.get(part, "") if preserve else ""
         full_class = "full" if part == 'Final Exam' else ""
