@@ -18,16 +18,28 @@
             text-decoration: none;
         }
         #container {
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto;
             background-color: #fff;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
         }
+        .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .form-group {
+            width: 48%;
+            margin-top: 15px;
+        }
+        .form-group.full {
+            width: 100%;
+            text-align: center;
+        }
         label {
             display: block;
-            margin-top: 15px;
             font-weight: bold;
         }
         input {
@@ -58,9 +70,18 @@
         .back-btn:hover {
             background-color: #0056b3;
         }
-        .grade-line {
+        table.grade-table {
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        table.grade-table td {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
             text-align: center;
-            margin: 5px 0;
+        }
+        .grade-line b {
+            display: inline-block;
+            min-width: 40px;
         }
     </style>
 </head>
@@ -84,13 +105,13 @@ grade_order = [
     'Writing Task 1 - Draft 1', 'Writing Task 1 - Final Draft',
     'Writing Task 2 - Draft 1', 'Writing Task 2 - Final Draft',
     'Writing Task 3 - Draft 1', 'Writing Task 3 - Final Draft',
-    'Presentation', 'Midterm Exam', 'Final Exam'
+    'Midterm Exam', 'Presentation', 'Final Exam'
 ]
 
 def calculate_grade_range(grade):
     grade_mapping = {
-        'A+': (93, 100), 'A': (90, 92.99), 'B+': (85, 89.99), 'B': (80, 84.99),
-        'C+': (75, 79.99), 'C': (70, 74.99), 'D+': (65, 69.99), 'D': (60, 64.99), 'F': (0, 59.99)
+        'A+': (93, 100), 'A': (90, 93), 'B+': (85, 90), 'B': (80, 85),
+        'C+': (75, 80), 'C': (70, 75), 'D+': (65, 70), 'D': (60, 65), 'F': (0, 60)
     }
     return grade_mapping.get(grade, (0, 0))
 
@@ -129,16 +150,11 @@ def calculate_and_show_results():
         <p><strong>Minimum Total:</strong> <strong>{min_total:.2f}</strong> (أقل درجة ممكن تجيبها)</p>
         <p><strong>Maximum Total:</strong> <strong>{max_total:.2f}</strong> (أعلى درجة ممكن تجيبها)</p>
         <br>
-        <div class='grade-line'><b>A+</b>: 93-100</div>
-        <div class='grade-line'><b>A</b>: 90-92</div>
-        <div class='grade-line'><b>B+</b>: 85-89</div>
-        <div class='grade-line'><b>B</b>: 80-84</div>
-        <div class='grade-line'><b>C+</b>: 75-79</div>
-        <div class='grade-line'><b>C</b>: 70-74</div>
-        <div class='grade-line'><b>D+</b>: 65-69</div>
-        <div class='grade-line'><b>D</b>: 60-64</div>
-        <div class='grade-line'><b>F</b>: 0-59</div>
-        <br>
+        <table class='grade-table'>
+            <tr><td><b>A+</b></td><td>93-100</td><td><b>A</b></td><td>90-92</td><td><b>B+</b></td><td>85-89</td></tr>
+            <tr><td><b>B</b></td><td>80-84</td><td><b>C+</b></td><td>75-79</td><td><b>C</b></td><td>70-74</td></tr>
+            <tr><td><b>D+</b></td><td>65-69</td><td><b>D</b></td><td>60-64</td><td><b>F</b></td><td>0-59</td></tr>
+        </table>
         <h3>طبعا الدرجة بتتغير مع الأفرج والابقريد ونحو ذلك - هذه فقط درجة مبدئية</h3>
         <button class='back-btn' id='editGrades'>Go Back & Edit Grades</button>
         <br><br>
@@ -149,14 +165,17 @@ def calculate_and_show_results():
     document["editGrades"].bind("click", lambda ev: start_process(True))
 
 def start_process(preserve=False):
-    form_html = "<h2>Enter Your English 102 Grades</h2><form id='gradeForm'>"
+    form_html = "<h2>Enter Your English 102 Grades</h2><form id='gradeForm'><div class='form-grid'>"
     for part in grade_order:
         current_value = grades.get(part, "") if preserve else ""
+        full_class = "full" if part == 'Final Exam' else ""
         form_html += f"""
-            <label for='{part}'>{part}:</label>
-            <input type='text' id='{part}' name='{part}' class='gradeInput' value='{current_value}'>
+            <div class='form-group {full_class}'>
+                <label for='{part}'>{part}:</label>
+                <input type='text' id='{part}' name='{part}' class='gradeInput' value='{current_value}'>
+            </div>
         """
-    form_html += """
+    form_html += """</div>
         <button type='button' id='submitGrades'>Calculate</button>
     </form>
     """
