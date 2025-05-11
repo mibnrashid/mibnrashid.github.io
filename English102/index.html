@@ -31,9 +31,16 @@
             justify-content: space-between;
         }
         .form-group {
-            width: 48%;
+            width: calc(50% - 10px);
             margin-top: 15px;
+            box-sizing: border-box;
         }
+        .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px; /* Adds uniform spacing between columns/rows */
+        }
+
         .form-group.full {
             width: 100%;
             text-align: center;
@@ -110,8 +117,8 @@ grade_order = [
 
 def calculate_grade_range(grade):
     grade_mapping = {
-        'A+': (93, 100), 'A': (90, 93), 'B+': (85, 90), 'B': (80, 85),
-        'C+': (75, 80), 'C': (70, 75), 'D+': (65, 70), 'D': (60, 65), 'F': (0, 60)
+        'A+': (93, 100), 'A': (90, 92.99), 'B+': (85, 89.99), 'B': (80, 84.99),
+        'C+': (75, 79.99), 'C': (70, 74.99), 'D+': (65, 69.99), 'D': (60, 64.99), 'F': (0, 59.99)
     }
     return grade_mapping.get(grade, (0, 0))
 
@@ -151,13 +158,15 @@ def calculate_and_show_results():
         <p><strong>Maximum Total:</strong> <strong>{max_total:.2f}</strong> (أعلى درجة ممكن تجيبها)</p>
         <br>
         <table class='grade-table'>
-            <tr><td><b>A+</b></td><td>93-100</td><td><b>A</b></td><td>90-92</td><td><b>B+</b></td><td>85-89</td></tr>
-            <tr><td><b>B</b></td><td>80-84</td><td><b>C+</b></td><td>75-79</td><td><b>C</b></td><td>70-74</td></tr>
-            <tr><td><b>D+</b></td><td>65-69</td><td><b>D</b></td><td>60-64</td><td><b>F</b></td><td>0-59</td></tr>
+            <tr><td><b>A+</b></td><td>93-100</td><td><b>A</b></td><td>90-92.99</td><td><b>B+</b></td><td>85-89.99</td></tr>
+            <tr><td><b>B</b></td><td>80-84.99</td><td><b>C+</b></td><td>75-79.99</td><td><b>C</b></td><td>70-74.99</td></tr>
+            <tr><td><b>D+</b></td><td>65-69.99</td><td><b>D</b></td><td>60-64.99</td><td><b>F</b></td><td>0-59.99</td></tr>
         </table>
+        <br>
         <h3>طبعا الدرجة بتتغير مع الأفرج والابقريد ونحو ذلك - هذه فقط درجة مبدئية</h3>
+        <br>
         <button class='back-btn' id='editGrades'>Go Back & Edit Grades</button>
-        <br><br>
+        <br>
         <h2>وفقكم الله دعواتكم 🤍🫡</h2>
     """
     document["formContainer"].html = ""
