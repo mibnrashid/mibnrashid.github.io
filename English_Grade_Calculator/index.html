@@ -174,6 +174,14 @@
             text-align: center;
         }
         
+        .form-group.paired-group {
+            text-align: left;
+        }
+        
+        .form-group.paired-group label {
+            text-align: left;
+        }
+        
         label {
             display: block;
             font-weight: 600;
@@ -507,7 +515,8 @@ course_configs = {
             'Source Notes 2',
             'Midterm Exam',
             'Report Draft 3 (1,600–1,900 words)',
-            'Job Skills (CV/Resume)',
+            'Job Skills CV',
+            'Job Skills Application',
             'Report Presentation and Interview',
             'Final Exam'
         ],
@@ -520,11 +529,13 @@ course_configs = {
             'Source Notes 2': 0.02,
             'Report Draft 3 (1,600–1,900 words)': 0.10,
             'Report Presentation and Interview': 0.15,
-            'Job Skills (CV/Resume)': 0.10,
+            'Job Skills CV': 0.05,
+            'Job Skills Application': 0.05,
             'Midterm Exam': 0.15,
             'Final Exam': 0.20
         },
-        'full_width_fields': ['Report Draft 1 (700–900 words)', 'Report Draft 3 (1,600–1,900 words)', 'Final Exam']
+        'full_width_fields': ['Report Draft 1 (700–900 words)', 'Report Draft 3 (1,600–1,900 words)', 'Final Exam'],
+        'paired_fields': ['Job Skills CV', 'Job Skills Application']
     }
 }
 
@@ -605,10 +616,59 @@ def start_process(preserve=False):
     course_name = config['name']
     grade_order = config['grade_order']
     full_width_fields = config.get('full_width_fields', [])
+    paired_fields = config.get('paired_fields', [])
     
     form_html = f"<h2>Enter Your {course_name} Grades:</h2><form id='gradeForm'><div class='form-grid'>"
     valid_grades = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']
-    for part in grade_order:
+    skip_next = False
+    
+    for i, part in enumerate(grade_order):
+        # Skip if this is the second part of a pair (already handled)
+        if skip_next:
+            skip_next = False
+            continue
+        
+        # Check if this is the first part of a paired field
+        if part in paired_fields and i < len(grade_order) - 1:
+            next_part = grade_order[i + 1]
+            if next_part in paired_fields:
+                # Create paired form group
+                current_value1 = grades.get(part, "") if preserve else ""
+                current_value2 = grades.get(next_part, "") if preserve else ""
+                empty_class1 = "empty-select" if not current_value1 else ""
+                empty_class2 = "empty-select" if not current_value2 else ""
+                
+                options_html1 = "<option value=''>Select Grade</option>"
+                options_html2 = "<option value=''>Select Grade</option>"
+                for grade in valid_grades:
+                    selected1 = "selected" if grade == current_value1 else ""
+                    selected2 = "selected" if grade == current_value2 else ""
+                    options_html1 += f"<option value='{grade}' {selected1}>{grade}</option>"
+                    options_html2 += f"<option value='{grade}' {selected2}>{grade}</option>"
+                
+                form_html += f"""
+            <div class='form-group full paired-group'>
+                <label style='width: 100%; margin-bottom: 10px;'>Job Skills (CV/Resume):</label>
+                <div style='display: flex; gap: 15px; width: 100%;'>
+                    <div style='flex: 1;'>
+                        <label for='{part}' style='font-size: 12px; margin-bottom: 5px; display: block;'>{part}:</label>
+                        <select id='{part}' name='{part}' class='gradeInput {empty_class1}'>
+                            {options_html1}
+                        </select>
+                    </div>
+                    <div style='flex: 1;'>
+                        <label for='{next_part}' style='font-size: 12px; margin-bottom: 5px; display: block;'>{next_part}:</label>
+                        <select id='{next_part}' name='{next_part}' class='gradeInput {empty_class2}'>
+                            {options_html2}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        """
+                skip_next = True
+                continue
+        
+        # Regular form group
         current_value = grades.get(part, "") if preserve else ""
         full_class = "full" if part in full_width_fields else ""
         empty_class = "empty-select" if not current_value else ""
