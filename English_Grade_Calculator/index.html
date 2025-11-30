@@ -11,107 +11,363 @@
     <title>English Grade Calculator</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 40px;
-            background-color: #f9f9f9;
-            color: #333;
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
         }
+        
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace, system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at center, #0a1929 0%, #000510 100%);
+            background-attachment: fixed;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         h1, h2, h3 {
             text-align: center;
+            margin: 0.5em 0;
         }
+        
+        h1 {
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3);
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        h2 {
+            color: #00ffff;
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
+            font-weight: 600;
+        }
+        
+        h3 {
+            color: #b0b0b0;
+            font-weight: 500;
+        }
+        
         a {
-            color: #007BFF;
+            color: #00ffff;
             text-decoration: none;
+            transition: all 0.3s ease;
         }
+        
+        a:hover {
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+        }
+        
+        a:focus {
+            outline: 2px solid #00ffff;
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
+        
         #container {
-            max-width: 700px;
+            max-width: 800px;
             margin: 0 auto;
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #0f1b2e 0%, #0a1525 100%);
+            padding: 40px 30px;
+            border-radius: 24px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2), 
+                        inset 0 0 30px rgba(0, 255, 255, 0.05);
+            animation: fadeInUp 0.6s ease-out;
         }
+        
         .course-selector {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin: 20px 0;
+            gap: 12px;
+            margin: 30px 0;
             flex-wrap: wrap;
         }
+        
         .course-btn {
-            padding: 12px 24px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 6px;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #0066ff 0%, #0044cc 100%);
+            color: #ffffff;
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
+            max-width: 200px;
+            width: 100%;
         }
+        
         .course-btn:hover {
-            background-color: #0056b3;
+            background: linear-gradient(135deg, #0088ff 0%, #0066ff 100%);
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(0, 136, 255, 0.5);
+            border-color: rgba(0, 255, 255, 0.6);
         }
+        
+        .course-btn:focus {
+            outline: 2px solid #00ffff;
+            outline-offset: 2px;
+        }
+        
         .course-btn.active {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+            color: #000;
         }
+        
+        .course-btn.active:hover {
+            background: linear-gradient(135deg, #00ffaa 0%, #00ff88 100%);
+            box-shadow: 0 0 25px rgba(0, 255, 136, 0.8);
+        }
+        
         .form-grid {
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
+            gap: 15px;
         }
+        
         .form-group {
-            width: 48%;
+            width: calc(48% - 7.5px);
             margin-top: 15px;
         }
+        
         .form-group.full {
             width: 100%;
             text-align: center;
         }
+        
         label {
             display: block;
-            font-weight: bold;
+            font-weight: 600;
+            color: #00ffff;
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
+        
         input {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-top: 5px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            background: rgba(10, 20, 35, 0.8);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
         }
+        
+        input:focus {
+            outline: none;
+            border-color: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+            background: rgba(15, 30, 50, 0.9);
+        }
+        
+        input::placeholder {
+            color: #666;
+        }
+        
         button {
             margin-top: 25px;
-            padding: 12px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 6px;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #0066ff 0%, #0044cc 100%);
+            color: #ffffff;
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            border-radius: 8px;
             cursor: pointer;
             width: 100%;
             font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
         }
+        
         button:hover {
-            background-color: #45a049;
+            background: linear-gradient(135deg, #0088ff 0%, #0066ff 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 136, 255, 0.5);
         }
+        
+        button:focus {
+            outline: 2px solid #00ffff;
+            outline-offset: 2px;
+        }
+        
         .back-btn {
-            background-color: #007BFF;
+            background: transparent;
+            border: 2px solid #0066ff;
+            color: #0066ff;
             margin-top: 15px;
         }
+        
         .back-btn:hover {
-            background-color: #0056b3;
+            background: #0066ff;
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(0, 102, 255, 0.6);
         }
-        table.grade-table {
-            margin: 20px auto;
-            border-collapse: collapse;
+        
+        #results {
+            margin-top: 30px;
         }
-        table.grade-table td {
-            padding: 8px 12px;
-            border: 1px solid #ccc;
+        
+        #results h2 {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        
+        #results p {
+            color: #d0d0d0;
+            margin: 15px 0;
+            font-size: 15px;
+        }
+        
+        #results p strong {
+            color: #00ffff;
+            font-weight: 600;
+        }
+        
+        .result-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .result-card {
+            background: rgba(10, 20, 35, 0.6);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
             text-align: center;
         }
+        
+        .result-card-label {
+            font-size: 12px;
+            color: #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        
+        .result-card-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        
+        table.grade-table {
+            margin: 30px auto;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            background: rgba(10, 20, 35, 0.6);
+        }
+        
+        table.grade-table tr {
+            transition: all 0.2s ease;
+        }
+        
+        table.grade-table tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        
+        table.grade-table td {
+            padding: 12px 16px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            text-align: center;
+            color: #e0e0e0;
+        }
+        
+        table.grade-table td b {
+            color: #00ffff;
+            font-weight: 700;
+        }
+        
         .grade-line b {
             display: inline-block;
             min-width: 40px;
+        }
+        
+        #formContainer h2 {
+            margin-bottom: 25px;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            #container {
+                padding: 25px 20px;
+                border-radius: 16px;
+            }
+            
+            .form-group {
+                width: 100%;
+            }
+            
+            .course-btn {
+                max-width: 100%;
+                width: 100%;
+            }
+            
+            .result-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            table.grade-table {
+                font-size: 12px;
+            }
+            
+            table.grade-table td {
+                padding: 8px 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 24px;
+            }
+            
+            h2 {
+                font-size: 18px;
+            }
+            
+            #container {
+                padding: 20px 15px;
+            }
         }
     </style>
 </head>
@@ -230,21 +486,26 @@ def calculate_and_show_results():
     global current_course, grades
     min_total, max_total = calculate_total(grades, current_course)
     result_html = f"""
-        <br>
         <h2>The Range of your Points:</h2>
-        <p><strong>Minimum Total:</strong> <strong>{min_total:.2f}</strong> (أقل درجة ممكن تجيبها)</p>
-        <p><strong>Maximum Total:</strong> <strong>{max_total:.2f}</strong> (أعلى درجة ممكن تجيبها)</p>
-        <br>
+        <div class='result-cards'>
+            <div class='result-card'>
+                <div class='result-card-label'>MIN&gt;</div>
+                <div class='result-card-value'>{min_total:.2f}</div>
+                <div style='margin-top: 8px; font-size: 12px; color: #888;'>(أقل درجة ممكن تجيبها)</div>
+            </div>
+            <div class='result-card'>
+                <div class='result-card-label'>MAX&gt;</div>
+                <div class='result-card-value'>{max_total:.2f}</div>
+                <div style='margin-top: 8px; font-size: 12px; color: #888;'>(أعلى درجة ممكن تجيبها)</div>
+            </div>
+        </div>
         <table class='grade-table'>
             <tr><td><b>A+</b></td><td>93 - 100</td><td><b>A</b></td><td>90 - 92.99</td><td><b>B+</b></td><td>85 - 89.99</td></tr>
             <tr><td><b>B</b></td><td>80 - 84.99</td><td><b>C+</b></td><td>75 - 79.99</td><td><b>C</b></td><td>70 - 74.99</td></tr>
             <tr><td><b>D+</b></td><td>65 - 69.99</td><td><b>D</b></td><td>60 - 64.99</td><td><b>F</b></td><td>0 - 59.99</td></tr>
         </table>
-        <br>
         <h3>طبعا الدرجة بتتغير مع الأفرج والابقريد ونحو ذلك - هذه فقط درجة مبدئية</h3>
-        <br>
         <button class='back-btn' id='editGrades'>Go Back & Edit Grades</button>
-        <br>
         <h2>وفقكم الله دعواتكم 🤍🫡</h2>
     """
     document["formContainer"].html = ""
