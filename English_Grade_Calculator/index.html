@@ -389,7 +389,7 @@
     <div id="container">
         <h1>English Grade Calculator 🟰</h1>
         <h2><a href="https://x.com/Ice_Ninja5" target="_blank">Programmed by Ice❄️</a></h2>
-        <p style='text-align: center; margin: 10px 0 20px 0; font-size: 14px; color: #b0d0ff; font-weight: 600; direction: rtl;'>صلوا على رسولكم الأمين</p>
+        <p style='text-align: center; margin: 15px 0 25px 0; font-size: 15px; color: #b0d0ff; font-weight: 500; font-style: italic; direction: rtl; line-height: 1.8; padding: 0 20px;'>"إن الله وملائكته يصلون على النبي يا أيها الذين آمنوا صلوا عليه وسلموا تسليما"</p>
 
         <div class="course-selector">
             <button class="course-btn" id="btn101">English 101</button>
@@ -478,18 +478,11 @@ current_course = None
 grades = {}
 
 def calculate_grade_range(grade, course_key):
-    # English 214 uses different grade boundaries
-    if course_key == '214':
-        grade_mapping = {
-            'A+': (95, 100), 'A': (90, 94.99), 'B+': (85, 89.99), 'B': (80, 84.99),
-            'C+': (75, 79.99), 'C': (70, 74.99), 'D+': (65, 69.99), 'D': (60, 64.99), 'F': (0, 59.99)
-        }
-    else:
-        # English 101 and 102 use standard boundaries
-        grade_mapping = {
-            'A+': (93, 100), 'A': (90, 92.99), 'B+': (85, 89.99), 'B': (80, 84.99),
-            'C+': (75, 79.99), 'C': (70, 74.99), 'D+': (65, 69.99), 'D': (60, 64.99), 'F': (0, 59.99)
-        }
+    # All courses use English 214 grade boundaries
+    grade_mapping = {
+        'A+': (95, 100), 'A': (90, 94.99), 'B+': (85, 89.99), 'B': (80, 84.99),
+        'C+': (75, 79.99), 'C': (70, 74.99), 'D+': (65, 69.99), 'D': (60, 64.99), 'F': (0, 59.99)
+    }
     return grade_mapping.get(grade, (0, 0))
 
 def calculate_total(grades, course_key):
@@ -519,38 +512,29 @@ def calculate_and_show_results():
     global current_course, grades
     min_total, max_total = calculate_total(grades, current_course)
     
-    # Generate grade table based on course
-    if current_course == '214':
-        grade_table = """
-            <table class='grade-table'>
-                <tr><td><b>A+</b></td><td>95 - 100</td><td><b>A</b></td><td>90 - 94.99</td><td><b>B+</b></td><td>85 - 89.99</td></tr>
-                <tr><td><b>B</b></td><td>80 - 84.99</td><td><b>C+</b></td><td>75 - 79.99</td><td><b>C</b></td><td>70 - 74.99</td></tr>
-                <tr><td><b>D+</b></td><td>65 - 69.99</td><td><b>D</b></td><td>60 - 64.99</td><td><b>F</b></td><td>0 - 59.99</td></tr>
-            </table>
-        """
-    else:
-        grade_table = """
-            <table class='grade-table'>
-                <tr><td><b>A+</b></td><td>93 - 100</td><td><b>A</b></td><td>90 - 92.99</td><td><b>B+</b></td><td>85 - 89.99</td></tr>
-                <tr><td><b>B</b></td><td>80 - 84.99</td><td><b>C+</b></td><td>75 - 79.99</td><td><b>C</b></td><td>70 - 74.99</td></tr>
-                <tr><td><b>D+</b></td><td>65 - 69.99</td><td><b>D</b></td><td>60 - 64.99</td><td><b>F</b></td><td>0 - 59.99</td></tr>
-            </table>
-        """
+    # All courses use the same grade boundaries
+    grade_table = """
+        <table class='grade-table'>
+            <tr><td><b>A+</b></td><td>95.00 - 100.00</td><td><b>A</b></td><td>90.00 - 94.99</td><td><b>B+</b></td><td>85.00 - 89.99</td></tr>
+            <tr><td><b>B</b></td><td>80.00 - 84.99</td><td><b>C+</b></td><td>75.00 - 79.99</td><td><b>C</b></td><td>70.00 - 74.99</td></tr>
+            <tr><td><b>D+</b></td><td>65.00 - 69.99</td><td><b>D</b></td><td>60.00 - 64.99</td><td><b>F</b></td><td>0.00 - 59.99</td></tr>
+        </table>
+    """
     
     result_html = f"""
         <h2>The Range of your Points:</h2>
         <div class='result-cards'>
             <div class='result-card'>
-                <div class='result-card-label'>MIN&gt; <span class='result-card-label-arabic'>(أقل درجة ممكن تحصل عليها بدون الأفرج والأبقريد)</span></div>
+                <div class='result-card-label'>MIN <span class='result-card-label-arabic'>(أقل درجة ممكن تحصل عليها بدون الأفرج والأبقريد)</span></div>
                 <div class='result-card-value'>{min_total:.2f}</div>
             </div>
             <div class='result-card'>
-                <div class='result-card-label'>MAX&gt; <span class='result-card-label-arabic'>(أعلى درجة ممكن تحصل عليها بالأفرج والأبقريد)</span></div>
+                <div class='result-card-label'>MAX <span class='result-card-label-arabic'>(أعلى درجة ممكن تحصل عليها بدون الأفرج والأبقريد)</span></div>
                 <div class='result-card-value'>{max_total:.2f}</div>
             </div>
         </div>
         {grade_table}
-        <h3>طبعا الدرجة بتتغير مع الأفرج والابقريد ونحو ذلك - هذه فقط درجة مبدئية</h3>
+        <h3>طبعا هذه فقط درجة مبدئية - الدرجة ممكن تتغير مع الأفرج والابقريد</h3>
         <button class='back-btn' id='editGrades'>Go Back & Edit Grades</button>
         <h2>وفقكم الله دعواتكم 🤍🫡</h2>
     """
