@@ -540,17 +540,18 @@ def calculate_and_show_results():
         <h2>The Range of your Points:</h2>
         <div class='result-cards'>
             <div class='result-card'>
-                <div class='result-card-label'>MIN&gt; <span class='result-card-label-arabic'>(أقل درجة ممكن تحصيلها)</span></div>
+                <div class='result-card-label'>MIN&gt; <span class='result-card-label-arabic'>(أقل درجة ممكن تحصل عليها بدون الأفرج والأبقريد)</span></div>
                 <div class='result-card-value'>{min_total:.2f}</div>
             </div>
             <div class='result-card'>
-                <div class='result-card-label'>MAX&gt; <span class='result-card-label-arabic'>(أعلى درجة ممكن تحصيلها)</span></div>
+                <div class='result-card-label'>MAX&gt; <span class='result-card-label-arabic'>(أعلى درجة ممكن تحصل عليها بالأفرج والأبقريد)</span></div>
                 <div class='result-card-value'>{max_total:.2f}</div>
             </div>
         </div>
         {grade_table}
         <h3>طبعا الدرجة بتتغير مع الأفرج والابقريد ونحو ذلك - هذه فقط درجة مبدئية</h3>
         <button class='back-btn' id='editGrades'>Go Back & Edit Grades</button>
+        <p style='text-align: center; margin: 20px 0; font-size: 14px; color: #b0d0ff; font-weight: 600; direction: rtl;'>صلوا على رسولكم الأمين</p>
         <h2>وفقكم الله دعواتكم 🤍🫡</h2>
     """
     document["formContainer"].html = ""
