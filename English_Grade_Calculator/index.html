@@ -276,6 +276,20 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .result-card-label-arabic {
+            font-size: 13px;
+            font-weight: 700;
+            color: #b0d0ff;
+            direction: rtl;
+            text-transform: none;
+            letter-spacing: normal;
         }
         
         .result-card-value {
@@ -436,9 +450,9 @@ course_configs = {
             'Source Notes 1',
             'Report Draft 1 (700–900 words)',
             'Source Notes 2',
+            'Job Skills (CV/Resume)',
             'Report Draft 3 (1,600–1,900 words)',
             'Report Presentation and Interview',
-            'Job Skills (CV/Resume)',
             'Midterm Exam',
             'Final Exam'
         ],
@@ -526,14 +540,12 @@ def calculate_and_show_results():
         <h2>The Range of your Points:</h2>
         <div class='result-cards'>
             <div class='result-card'>
-                <div class='result-card-label'>MIN&gt;</div>
+                <div class='result-card-label'>MIN&gt; <span class='result-card-label-arabic'>(أقل درجة ممكن تحصيلها)</span></div>
                 <div class='result-card-value'>{min_total:.2f}</div>
-                <div style='margin-top: 8px; font-size: 12px; color: #888;'>(أقل درجة ممكن تجيبها)</div>
             </div>
             <div class='result-card'>
-                <div class='result-card-label'>MAX&gt;</div>
+                <div class='result-card-label'>MAX&gt; <span class='result-card-label-arabic'>(أعلى درجة ممكن تحصيلها)</span></div>
                 <div class='result-card-value'>{max_total:.2f}</div>
-                <div style='margin-top: 8px; font-size: 12px; color: #888;'>(أعلى درجة ممكن تجيبها)</div>
             </div>
         </div>
         {grade_table}
