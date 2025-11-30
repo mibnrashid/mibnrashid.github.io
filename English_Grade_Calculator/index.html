@@ -192,6 +192,33 @@
             color: #666;
         }
         
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            background: rgba(10, 20, 35, 0.8);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+            background: rgba(15, 30, 50, 0.9);
+        }
+        
+        select option {
+            background: #0f1b2e;
+            color: #ffffff;
+            padding: 10px;
+        }
+        
         button {
             margin-top: 25px;
             padding: 14px 20px;
@@ -389,7 +416,7 @@
     <div id="container">
         <h1>English Grade Calculator 🟰</h1>
         <h2><a href="https://x.com/Ice_Ninja5" target="_blank">Programmed by Ice❄️</a></h2>
-        <p style='text-align: center; margin: 10px 0 20px 0; font-size: 14px; color: #b0d0ff; font-weight: 600; direction: rtl;'>صلوا على رسولكم الأمين</p>
+        <p style='text-align: center; margin: 15px 0 25px 0; font-size: 15px; color: #b0d0ff; font-weight: 500; font-style: italic; direction: rtl; line-height: 1.8; padding: 0 20px;'>"إن الله وملائكته يصلون على النبي يا أيها الذين آمنوا صلوا عليه وسلموا تسليما"</p>
 
         <div class="course-selector">
             <button class="course-btn" id="btn101">English 101</button>
@@ -496,14 +523,17 @@ def calculate_total(grades, course_key):
     return total_min, total_max
 
 def validate_and_save(event):
-    inputs = document.select("input.gradeInput")
+    selects = document.select("select.gradeInput")
     global grades, current_course
     grades = {}
-    for field in inputs:
+    for field in selects:
         part = field.name
-        grade = field.value.upper()
+        grade = field.value
+        if not grade or grade == "":
+            alert(f"Please select a grade for {part}!")
+            return
         if grade not in ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']:
-            alert(f"Invalid grade for {part}! Please enter a valid grade.")
+            alert(f"Invalid grade for {part}! Please select a valid grade.")
             return
         grades[part] = grade
     calculate_and_show_results()
@@ -550,13 +580,20 @@ def start_process(preserve=False):
     full_width_fields = config.get('full_width_fields', [])
     
     form_html = f"<h2>Enter Your {course_name} Grades:</h2><form id='gradeForm'><div class='form-grid'>"
+    valid_grades = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']
     for part in grade_order:
         current_value = grades.get(part, "") if preserve else ""
         full_class = "full" if part in full_width_fields else ""
+        options_html = "<option value=''>Select Grade</option>"
+        for grade in valid_grades:
+            selected = "selected" if grade == current_value else ""
+            options_html += f"<option value='{grade}' {selected}>{grade}</option>"
         form_html += f"""
             <div class='form-group {full_class}'>
                 <label for='{part}'>{part}:</label>
-                <input type='text' id='{part}' name='{part}' class='gradeInput' value='{current_value}'>
+                <select id='{part}' name='{part}' class='gradeInput'>
+                    {options_html}
+                </select>
             </div>
         """
     form_html += """</div>
