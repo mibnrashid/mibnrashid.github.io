@@ -210,7 +210,7 @@
             letter-spacing: 0.05em;
         }
 
-        input {
+        input, select {
             width: 100%;
             padding: 14px 16px;
             background: rgba(0, 0, 0, 0.2);
@@ -220,13 +220,36 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 1rem;
             transition: all 0.3s ease;
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
         }
 
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: var(--primary);
             background: rgba(0, 0, 0, 0.4);
             box-shadow: 0 0 0 4px rgba(0, 255, 255, 0.1);
+        }
+        
+        .select-wrapper {
+            position: relative;
+        }
+        
+        .select-wrapper::after {
+            content: '▼';
+            font-size: 0.8rem;
+            color: var(--primary);
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+        
+        option {
+            background: var(--bg-navy);
+            color: #fff;
         }
 
         button#submitGrades, button.back-btn {
@@ -485,14 +508,14 @@ def calculate_total(grades, course_key):
     return total_min, total_max
 
 def validate_and_save(event):
-    inputs = document.select("input.gradeInput")
+    inputs = document.select(".gradeInput")
     global grades, current_course
     grades = {}
     for field in inputs:
         part = field.name
-        grade = field.value.upper()
-        if grade not in ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']:
-            alert(f"Invalid grade for {part}! Please enter a valid grade.")
+        grade = field.value
+        if not grade:
+            alert(f"Please select a grade for {part}!")
             return
         grades[part] = grade
     calculate_and_show_results()
@@ -538,14 +561,26 @@ def start_process(preserve=False):
     grade_order = config['grade_order']
     full_width_fields = config.get('full_width_fields', [])
     
+    valid_grades = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']
+    
     form_html = f"<h2>Enter Your {course_name} Grades:</h2><form id='gradeForm'><div class='form-grid'>"
     for part in grade_order:
         current_value = grades.get(part, "") if preserve else ""
         full_class = "full" if part in full_width_fields else ""
+        
+        options_html = "<option value='' disabled selected>Select Grade</option>"
+        for g in valid_grades:
+            selected = "selected" if current_value == g else ""
+            options_html += f"<option value='{g}' {selected}>{g}</option>"
+            
         form_html += f"""
             <div class='form-group {full_class}'>
                 <label for='{part}'>{part}:</label>
-                <input type='text' id='{part}' name='{part}' class='gradeInput' value='{current_value}'>
+                <div class='select-wrapper'>
+                    <select id='{part}' name='{part}' class='gradeInput'>
+                        {options_html}
+                    </select>
+                </div>
             </div>
         """
     form_html += """</div>
