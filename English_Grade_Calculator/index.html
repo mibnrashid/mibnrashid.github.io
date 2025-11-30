@@ -235,6 +235,18 @@
             padding: 10px;
         }
         
+        select option:first-child {
+            color: #666666;
+        }
+        
+        select.empty-select {
+            color: #666666;
+        }
+        
+        select:not(.empty-select) {
+            color: #ffffff;
+        }
+        
         button {
             margin-top: 25px;
             padding: 14px 20px;
@@ -600,6 +612,7 @@ def start_process(preserve=False):
     for part in grade_order:
         current_value = grades.get(part, "") if preserve else ""
         full_class = "full" if part in full_width_fields else ""
+        empty_class = "empty-select" if not current_value else ""
         options_html = "<option value=''>Select Grade</option>"
         for grade in valid_grades:
             selected = "selected" if grade == current_value else ""
@@ -607,7 +620,7 @@ def start_process(preserve=False):
         form_html += f"""
             <div class='form-group {full_class}'>
                 <label for='{part}'>{part}:</label>
-                <select id='{part}' name='{part}' class='gradeInput'>
+                <select id='{part}' name='{part}' class='gradeInput {empty_class}'>
                     {options_html}
                 </select>
             </div>
@@ -619,6 +632,18 @@ def start_process(preserve=False):
     document["formContainer"].html = form_html
     document["results"].html = ""
     document["submitGrades"].bind("click", validate_and_save)
+    
+    # Add change event listeners to update styling when grade is selected
+    selects = document.select("select.gradeInput")
+    for select in selects:
+        def make_handler(sel):
+            def handler(ev):
+                if sel.value == "":
+                    sel.classList.add("empty-select")
+                else:
+                    sel.classList.remove("empty-select")
+            return handler
+        select.bind("change", make_handler(select))
 
 def select_course(course_key):
     global current_course, grades
