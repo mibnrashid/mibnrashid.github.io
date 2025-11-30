@@ -1,0 +1,303 @@
+<!-- English Grade Calculator -->
+ <!-- Programmed by Ice❄️ -->
+ <!-- GitHub: https://github.com/Ice-Ninja5 -->
+ <!-- Twitter: https://x.com/Ice_Ninja5 -->
+ <!-- Instagram: https://www.instagram.com/ice_ninja5/ -->
+  <!-- Version 1.0.0 -->
+   <!-- https://mibnrashid.github.io/English_Grade_Calculator/ -->
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>English Grade Calculator</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        h1, h2, h3 {
+            text-align: center;
+        }
+        a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        #container {
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        .course-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .course-btn {
+            padding: 12px 24px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .course-btn:hover {
+            background-color: #0056b3;
+        }
+        .course-btn.active {
+            background-color: #4CAF50;
+        }
+        .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .form-group {
+            width: 48%;
+            margin-top: 15px;
+        }
+        .form-group.full {
+            width: 100%;
+            text-align: center;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            margin-top: 25px;
+            padding: 12px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .back-btn {
+            background-color: #007BFF;
+            margin-top: 15px;
+        }
+        .back-btn:hover {
+            background-color: #0056b3;
+        }
+        table.grade-table {
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        table.grade-table td {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        .grade-line b {
+            display: inline-block;
+            min-width: 40px;
+        }
+    </style>
+</head>
+<body onload="brython()">
+    <div id="container">
+        <h1>English Grade Calculator 🟰</h1>
+        <h2><a href="https://x.com/Ice_Ninja5" target="_blank">Programmed by Ice❄️</a></h2>
+
+        <div class="course-selector">
+            <button class="course-btn" id="btn101">English 101</button>
+            <button class="course-btn" id="btn102">English 102</button>
+            <button class="course-btn" id="btn214">English 214</button>
+        </div>
+
+        <div id="formContainer">
+            <h2>Select a course to begin</h2>
+        </div>
+        <div id="results"></div>
+    </div>
+
+    <script type="text/python">
+from browser import document, html, alert
+
+# Course configurations
+course_configs = {
+    '101': {
+        'name': 'English 101',
+        'grade_order': [
+            'Writing1', 'Writing2', 'Midterm', 'Final Writing', 'Final Overall Reading-Vocabulary-Grammar'
+        ],
+        'weights': {
+            'Writing1': 0.15,
+            'Writing2': 0.15,
+            'Midterm': 0.25,
+            'Final Writing': 0.25,
+            'Final Overall Reading-Vocabulary-Grammar': 0.20
+        },
+        'full_width_fields': ['Final Overall Reading-Vocabulary-Grammar']
+    },
+    '102': {
+        'name': 'English 102',
+        'grade_order': [
+            'Paraphrase Test',
+            'WT1 (Major Exam)',
+            'WT2 (Major Exam)',
+            'WT3 (Major Exam)',
+            'Oral Presentation',
+            'Final Exam'
+        ],
+        'weights': {
+            'Paraphrase Test': 0.10,
+            'WT1 (Major Exam)': 0.15,
+            'WT2 (Major Exam)': 0.20,
+            'WT3 (Major Exam)': 0.25,
+            'Oral Presentation': 0.15,
+            'Final Exam': 0.15
+        },
+        'full_width_fields': ['Final Exam']
+    },
+    '214': {
+        'name': 'English 214',
+        'grade_order': [
+            'Paraphrase Test',
+            'WT1 (Major Exam)',
+            'WT2 (Major Exam)',
+            'WT3 (Major Exam)',
+            'Oral Presentation',
+            'Final Exam'
+        ],
+        'weights': {
+            'Paraphrase Test': 0.10,
+            'WT1 (Major Exam)': 0.15,
+            'WT2 (Major Exam)': 0.20,
+            'WT3 (Major Exam)': 0.25,
+            'Oral Presentation': 0.15,
+            'Final Exam': 0.15
+        },
+        'full_width_fields': ['Final Exam']
+    }
+}
+
+current_course = None
+grades = {}
+
+def calculate_grade_range(grade):
+    grade_mapping = {
+        'A+': (93, 100), 'A': (90, 92.99), 'B+': (85, 89.99), 'B': (80, 84.99),
+        'C+': (75, 79.99), 'C': (70, 74.99), 'D+': (65, 69.99), 'D': (60, 64.99), 'F': (0, 59.99)
+    }
+    return grade_mapping.get(grade, (0, 0))
+
+def calculate_total(grades, course_key):
+    config = course_configs[course_key]
+    weights = config['weights']
+    total_min = total_max = 0
+    for part, grade in grades.items():
+        min_g, max_g = calculate_grade_range(grade)
+        total_min += min_g * weights[part]
+        total_max += max_g * weights[part]
+    return total_min, total_max
+
+def validate_and_save(event):
+    inputs = document.select("input.gradeInput")
+    global grades, current_course
+    grades = {}
+    for field in inputs:
+        part = field.name
+        grade = field.value.upper()
+        if grade not in ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']:
+            alert(f"Invalid grade for {part}! Please enter a valid grade.")
+            return
+        grades[part] = grade
+    calculate_and_show_results()
+
+def calculate_and_show_results():
+    global current_course, grades
+    min_total, max_total = calculate_total(grades, current_course)
+    result_html = f"""
+        <br>
+        <h2>The Range of your Points:</h2>
+        <p><strong>Minimum Total:</strong> <strong>{min_total:.2f}</strong> (أقل درجة ممكن تجيبها)</p>
+        <p><strong>Maximum Total:</strong> <strong>{max_total:.2f}</strong> (أعلى درجة ممكن تجيبها)</p>
+        <br>
+        <table class='grade-table'>
+            <tr><td><b>A+</b></td><td>93 - 100</td><td><b>A</b></td><td>90 - 92.99</td><td><b>B+</b></td><td>85 - 89.99</td></tr>
+            <tr><td><b>B</b></td><td>80 - 84.99</td><td><b>C+</b></td><td>75 - 79.99</td><td><b>C</b></td><td>70 - 74.99</td></tr>
+            <tr><td><b>D+</b></td><td>65 - 69.99</td><td><b>D</b></td><td>60 - 64.99</td><td><b>F</b></td><td>0 - 59.99</td></tr>
+        </table>
+        <br>
+        <h3>طبعا الدرجة بتتغير مع الأفرج والابقريد ونحو ذلك - هذه فقط درجة مبدئية</h3>
+        <br>
+        <button class='back-btn' id='editGrades'>Go Back & Edit Grades</button>
+        <br>
+        <h2>وفقكم الله دعواتكم 🤍🫡</h2>
+    """
+    document["formContainer"].html = ""
+    document["results"].html = result_html
+    document["editGrades"].bind("click", lambda ev: start_process(True))
+
+def start_process(preserve=False):
+    global current_course, grades
+    config = course_configs[current_course]
+    course_name = config['name']
+    grade_order = config['grade_order']
+    full_width_fields = config.get('full_width_fields', [])
+    
+    form_html = f"<h2>Enter Your {course_name} Grades:</h2><form id='gradeForm'><div class='form-grid'>"
+    for part in grade_order:
+        current_value = grades.get(part, "") if preserve else ""
+        full_class = "full" if part in full_width_fields else ""
+        form_html += f"""
+            <div class='form-group {full_class}'>
+                <label for='{part}'>{part}:</label>
+                <input type='text' id='{part}' name='{part}' class='gradeInput' value='{current_value}'>
+            </div>
+        """
+    form_html += """</div>
+        <button type='button' id='submitGrades'>Calculate</button>
+    </form>
+    """
+    document["formContainer"].html = form_html
+    document["results"].html = ""
+    document["submitGrades"].bind("click", validate_and_save)
+
+def select_course(course_key):
+    global current_course, grades
+    current_course = course_key
+    grades = {}
+    
+    # Update button styles
+    for key in course_configs.keys():
+        btn = document[f"btn{key}"]
+        if key == course_key:
+            btn.classList.add("active")
+        else:
+            btn.classList.remove("active")
+    
+    start_process(False)
+
+# Bind course selection buttons
+document["btn101"].bind("click", lambda ev: select_course('101'))
+document["btn102"].bind("click", lambda ev: select_course('102'))
+document["btn214"].bind("click", lambda ev: select_course('214'))
+    </script>
+</body>
+</html>
+
