@@ -39,6 +39,15 @@
             }
         }
         
+        @keyframes glowPulse {
+            0%, 100% {
+                text-shadow: 0 0 8px rgba(0, 255, 255, 0.6), 0 0 16px rgba(0, 255, 255, 0.4);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(0, 255, 255, 1), 0 0 30px rgba(0, 255, 255, 0.8), 0 0 40px rgba(0, 255, 255, 0.6);
+            }
+        }
+        
         h1, h2, h3 {
             text-align: center;
             margin: 0.5em 0;
@@ -55,6 +64,10 @@
             color: #00ffff;
             text-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
             font-weight: 600;
+        }
+        
+        h2.programmed-by {
+            animation: glowPulse 2s ease-in-out infinite;
         }
         
         h3 {
@@ -415,7 +428,7 @@
 <body onload="brython()">
     <div id="container">
         <h1>English Grade Calculator 🟰</h1>
-        <h2><a href="https://x.com/Ice_Ninja5" target="_blank">Programmed by Ice❄️</a></h2>
+        <h2 class="programmed-by"><a href="https://x.com/Ice_Ninja5" target="_blank">Programmed by Ice❄️</a></h2>
         <p style='text-align: center; margin: 15px 0 25px 0; font-size: 15px; color: #b0d0ff; font-weight: 500; font-style: italic; direction: rtl; line-height: 1.8; padding: 0 20px;'>"إن الله وملائكته يصلون على النبي يا أيها الذين آمنوا صلوا عليه وسلموا تسليما"</p>
 
         <div class="course-selector">
