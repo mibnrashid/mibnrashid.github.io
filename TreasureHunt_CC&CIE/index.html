@@ -17,6 +17,9 @@
   <!-- CodeMirror JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  
+  <!-- Pyodide for running Python in browser -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
 
   <style>
     :root {
@@ -718,6 +721,14 @@
     <div class="maze-preview" id="mazePreview">
       <img src="IMG.jpg" alt="Maze Preview" id="mazeImage">
     </div>
+    <!-- TURTLE CANVAS CONTAINER -->
+    <div id="turtle-container" style="display: none; margin-top: 1.5rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1rem; box-shadow: var(--shadow-md);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em;">Maze Game</span>
+        <button id="closeTurtleBtn" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem 1rem; cursor: pointer; font-size: 0.875rem;">Close</button>
+      </div>
+      <canvas id="turtle-canvas" style="width: 100%; height: auto; border-radius: 8px; background: black;"></canvas>
+    </div>
   </div>
 
   <div class="main-content">
@@ -798,6 +809,517 @@ At the end we will check if you reached the goal.</p>
 </div>
 
 <script>
+  /* -------- GET DOM ELEMENTS -------- */
+  const statusDiv = document.getElementById("status");
+  const turtleContainer = document.getElementById("turtle-container");
+  const turtleCanvas = document.getElementById("turtle-canvas");
+  const closeTurtleBtn = document.getElementById("closeTurtleBtn");
+  
+  /* -------- PYODIDE INITIALIZATION -------- */
+  let pyodide = null;
+  let pyodideReady = false;
+  let gameInitialized = false;
+  
+  async function initPyodide() {
+    if (pyodide) return pyodide;
+    
+    statusDiv.textContent = "🔄 Loading Python runtime...";
+    statusDiv.style.color = "var(--accent-tertiary)";
+    
+    pyodide = await globalThis.loadPyodide({
+      indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/"
+    });
+    
+    // Load turtle module (turtle is included in Pyodide by default)
+    
+    // Set up canvas for turtle
+    const canvas = document.getElementById("turtle-canvas");
+    canvas.width = 900;
+    canvas.height = 700;
+    
+    // Configure turtle to use our canvas
+    pyodide.runPython(`
+import js
+from pyodide import create_proxy
+
+# Get canvas element and set up turtle
+canvas = js.document.getElementById("turtle-canvas")
+`);
+    
+    pyodideReady = true;
+    
+    statusDiv.textContent = "✅ Python runtime ready!";
+    statusDiv.style.color = "var(--success)";
+    setTimeout(() => {
+      if (!hasRun) {
+        startIdleAnimation();
+      }
+    }, 2000);
+    
+    return pyodide;
+  }
+  
+  // Function to initialize/reset the game
+  async function initGame() {
+    if (gameInitialized) {
+      // Reset game by re-running initialization
+      try {
+        pyodide.runPython(`
+if 'wn' in globals():
+    try:
+        wn.bye()
+    except:
+        pass
+`);
+      } catch(e) {}
+    }
+    
+    // Load animation.gif as base64
+    const gifResponse = await fetch("animation.gif");
+    const gifBlob = await gifResponse.blob();
+    const gifBase64 = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result.split(',')[1]);
+      reader.readAsDataURL(gifBlob);
+    });
+    
+    // Set up the base code with GIF handling
+    const BASE_CODE = `
+import turtle
+import time
+import base64
+from io import BytesIO
+
+# Store GIF data
+GIF_DATA = "${gifBase64}"
+
+def start_game():
+    global TILE_SIZE, START_X, START_Y
+    # ---------- MAZE DATA ----------
+    maze = [
+        "XXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "XP                        X",
+        "X XXX XXXXXXX X XXXXXXX XXX",
+        "X   X X     X X X     X   X",
+        "XXX X X XXX X X X XXX X X X",
+        "X   X   X X     X X X   X X",
+        "X XXXXXXX X XXXXX X XXXXX X",
+        "X       X X     X X     X X",
+        "XXXXXXX X XXXXX X XXXXX X X",
+        "X     X X     X X     X   X",
+        "X XXX X XXXXX X XXXXX XXXXX",
+        "X X   X     X X     X     X",
+        "X X XXXXXXX X XXXXX XXXXX X",
+        "X X       X X     X     G X",
+        "XXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    ]
+
+    ROWS = len(maze)
+    COLS = len(maze[0])
+    TILE_SIZE = 24
+
+    START_X = - (COLS * TILE_SIZE) // 2
+    START_Y =   (ROWS * TILE_SIZE) // 2
+
+    # ---------- SCREEN ----------
+    wn = turtle.Screen()
+    wn.title("CIE & CC Maze Challenge")
+    wn.bgcolor("black")
+    wn.setup(width=900, height=700)
+    wn.tracer(0)
+
+    # ---------- TURTLES ----------
+    class Wall(turtle.Turtle):
+        def __init__(self):
+            super().__init__()
+            self.shape("square")
+            self.color("white")
+            self.penup()
+            self.speed(0)
+            self.shapesize(TILE_SIZE / 20 * 0.9, TILE_SIZE / 20 * 0.9)
+
+    class Player(turtle.Turtle):
+        def __init__(self):
+            super().__init__()
+            try:
+                # Try to load GIF, fallback to default shape if it fails
+                import base64
+                gif_bytes = base64.b64decode(GIF_DATA)
+                with open("/tmp/animation.gif", "wb") as f:
+                    f.write(gif_bytes)
+                wn.addshape("/tmp/animation.gif")
+                self.shape("/tmp/animation.gif")
+            except:
+                self.shape("turtle")
+            self.color("cyan")
+            self.penup()
+            self.speed(0)
+
+    class Goal(turtle.Turtle):
+        def __init__(self):
+            super().__init__()
+            self.shape("circle")
+            self.color("red")
+            self.penup()
+            self.speed(0)
+
+    # Create objects
+    wall = Wall()
+    player = Player()
+    goal = Goal()
+    error_display = turtle.Turtle()
+    error_display.hideturtle()
+    error_display.penup()
+    error_display.speed(0)
+
+    walls = set()  
+    start = None   
+    end = None     
+
+    player_gx = None
+    player_gy = None
+
+    # ---------- BUILD MAZE ----------
+    def setup_maze(level):
+        nonlocal start, end, player_gx, player_gy
+        for gy, row in enumerate(level):
+            for gx, cell in enumerate(row):
+                sx = START_X + gx * TILE_SIZE
+                sy = START_Y - gy * TILE_SIZE
+
+                if cell == "X":
+                    wall.goto(sx, sy)
+                    wall.stamp()
+                    walls.add((gx, gy))
+
+                elif cell == "P":
+                    start = (gx, gy)
+                    player_gx, player_gy = gx, gy
+                    player.goto(sx, sy)
+
+                elif cell == "G":
+                    end = (gx, gy)
+                    goal.goto(sx, sy)
+
+        wn.update()
+
+    def grid_to_screen(gx, gy):
+        return START_X + gx * TILE_SIZE, START_Y - gy * TILE_SIZE
+
+    # ---------- ERROR DISPLAY ----------
+    def show_error(message):
+        error_display.clear()
+        error_display.goto(0, START_Y + 80)
+        error_display.color("red")
+        error_display.fillcolor("red")
+        
+        # Draw red box - larger size
+        box_width = 500
+        box_height = 100
+        error_display.begin_fill()
+        error_display.goto(-box_width/2, START_Y + 80)
+        error_display.pendown()
+        error_display.goto(box_width/2, START_Y + 80)
+        error_display.goto(box_width/2, START_Y + 80 - box_height)
+        error_display.goto(-box_width/2, START_Y + 80 - box_height)
+        error_display.goto(-box_width/2, START_Y + 80)
+        error_display.end_fill()
+        error_display.penup()
+        
+        # Write error text - larger font
+        error_display.goto(0, START_Y + 35)
+        error_display.color("white")
+        error_display.write(message, align="center", font=("Arial", 18, "bold"))
+        wn.update()
+        
+        # Clear error after 2 seconds
+        wn.ontimer(lambda: error_display.clear(), 2000)
+
+    # ---------- FAIL ----------
+    def fail(message):
+        print(message)
+        wn.title(message + "  Try again!")
+        time.sleep(1)
+        wn.bye()
+
+    # ---------- MOVEMENT ----------
+    def attempt_move(dx, dy):
+        nonlocal player_gx, player_gy
+
+        nx = player_gx + dx
+        ny = player_gy + dy
+
+        # bounds
+        if not (0 <= nx < COLS and 0 <= ny < ROWS):
+            fail("Out of bounds!")
+            return
+
+        # wall collision
+        if (nx, ny) in walls:
+            show_error("Error: Hit a wall! Try a different direction.")
+            return
+
+        # update
+        error_display.clear()  # Clear any error message on successful move
+        player_gx, player_gy = nx, ny
+        sx, sy = grid_to_screen(nx, ny)
+        player.goto(sx, sy)
+        wn.update()
+        time.sleep(0.08)
+
+    # Public movement commands
+    def move_up():    attempt_move(0, -1)
+    def move_down():  attempt_move(0, 1)
+    def move_left():  attempt_move(-1, 0)
+    def move_right(): attempt_move(1, 0)
+
+    # Setup maze
+    setup_maze(maze)
+
+    # Return everything to user
+    return player, wn, move_up, move_down, move_left, move_right, end
+
+# Initialize game
+player, wn, move_up, move_down, move_left, move_right, end = start_game()
+`;
+    
+    pyodide.runPython(BASE_CODE);
+    gameInitialized = true;
+  }
+  
+  // Function to initialize/reset the game
+  async function initGame() {
+    if (gameInitialized) {
+      // Reset game by re-running initialization
+      try {
+        pyodide.runPython(`
+if 'wn' in globals():
+    try:
+        wn.bye()
+    except:
+        pass
+`);
+      } catch(e) {}
+    }
+    
+    // Load animation.gif as base64
+    const gifResponse = await fetch("animation.gif");
+    const gifBlob = await gifResponse.blob();
+    const gifBase64 = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result.split(',')[1]);
+      reader.readAsDataURL(gifBlob);
+    });
+    
+    // Set up the base code with GIF handling
+    const BASE_CODE = `
+import turtle
+import time
+import base64
+
+# Store GIF data
+GIF_DATA = "${gifBase64}"
+
+def start_game():
+    global TILE_SIZE, START_X, START_Y
+    # ---------- MAZE DATA ----------
+    maze = [
+        "XXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "XP                        X",
+        "X XXX XXXXXXX X XXXXXXX XXX",
+        "X   X X     X X X     X   X",
+        "XXX X X XXX X X X XXX X X X",
+        "X   X   X X     X X X   X X",
+        "X XXXXXXX X XXXXX X XXXXX X",
+        "X       X X     X X     X X",
+        "XXXXXXX X XXXXX X XXXXX X X",
+        "X     X X     X X     X   X",
+        "X XXX X XXXXX X XXXXX XXXXX",
+        "X X   X     X X     X     X",
+        "X X XXXXXXX X XXXXX XXXXX X",
+        "X X       X X     X     G X",
+        "XXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    ]
+
+    ROWS = len(maze)
+    COLS = len(maze[0])
+    TILE_SIZE = 24
+
+    START_X = - (COLS * TILE_SIZE) // 2
+    START_Y =   (ROWS * TILE_SIZE) // 2
+
+    # ---------- SCREEN ----------
+    wn = turtle.Screen()
+    wn.title("CIE & CC Maze Challenge")
+    wn.bgcolor("black")
+    wn.setup(width=900, height=700)
+    wn.tracer(0)
+
+    # ---------- TURTLES ----------
+    class Wall(turtle.Turtle):
+        def __init__(self):
+            super().__init__()
+            self.shape("square")
+            self.color("white")
+            self.penup()
+            self.speed(0)
+            self.shapesize(TILE_SIZE / 20 * 0.9, TILE_SIZE / 20 * 0.9)
+
+    class Player(turtle.Turtle):
+        def __init__(self):
+            super().__init__()
+            try:
+                # Try to load GIF, fallback to default shape if it fails
+                gif_bytes = base64.b64decode(GIF_DATA)
+                with open("/tmp/animation.gif", "wb") as f:
+                    f.write(gif_bytes)
+                wn.addshape("/tmp/animation.gif")
+                self.shape("/tmp/animation.gif")
+            except:
+                self.shape("turtle")
+            self.color("cyan")
+            self.penup()
+            self.speed(0)
+
+    class Goal(turtle.Turtle):
+        def __init__(self):
+            super().__init__()
+            self.shape("circle")
+            self.color("red")
+            self.penup()
+            self.speed(0)
+
+    # Create objects
+    wall = Wall()
+    player = Player()
+    goal = Goal()
+    error_display = turtle.Turtle()
+    error_display.hideturtle()
+    error_display.penup()
+    error_display.speed(0)
+
+    walls = set()  
+    start = None   
+    end = None     
+
+    player_gx = None
+    player_gy = None
+
+    # ---------- BUILD MAZE ----------
+    def setup_maze(level):
+        nonlocal start, end, player_gx, player_gy
+        for gy, row in enumerate(level):
+            for gx, cell in enumerate(row):
+                sx = START_X + gx * TILE_SIZE
+                sy = START_Y - gy * TILE_SIZE
+
+                if cell == "X":
+                    wall.goto(sx, sy)
+                    wall.stamp()
+                    walls.add((gx, gy))
+
+                elif cell == "P":
+                    start = (gx, gy)
+                    player_gx, player_gy = gx, gy
+                    player.goto(sx, sy)
+
+                elif cell == "G":
+                    end = (gx, gy)
+                    goal.goto(sx, sy)
+
+        wn.update()
+
+    def grid_to_screen(gx, gy):
+        return START_X + gx * TILE_SIZE, START_Y - gy * TILE_SIZE
+
+    # ---------- ERROR DISPLAY ----------
+    def show_error(message):
+        error_display.clear()
+        error_display.goto(0, START_Y + 80)
+        error_display.color("red")
+        error_display.fillcolor("red")
+        
+        # Draw red box - larger size
+        box_width = 500
+        box_height = 100
+        error_display.begin_fill()
+        error_display.goto(-box_width/2, START_Y + 80)
+        error_display.pendown()
+        error_display.goto(box_width/2, START_Y + 80)
+        error_display.goto(box_width/2, START_Y + 80 - box_height)
+        error_display.goto(-box_width/2, START_Y + 80 - box_height)
+        error_display.goto(-box_width/2, START_Y + 80)
+        error_display.end_fill()
+        error_display.penup()
+        
+        # Write error text - larger font
+        error_display.goto(0, START_Y + 35)
+        error_display.color("white")
+        error_display.write(message, align="center", font=("Arial", 18, "bold"))
+        wn.update()
+        
+        # Clear error after 2 seconds
+        wn.ontimer(lambda: error_display.clear(), 2000)
+
+    # ---------- FAIL ----------
+    def fail(message):
+        print(message)
+        wn.title(message + "  Try again!")
+        time.sleep(1)
+        wn.bye()
+
+    # ---------- MOVEMENT ----------
+    def attempt_move(dx, dy):
+        nonlocal player_gx, player_gy
+
+        nx = player_gx + dx
+        ny = player_gy + dy
+
+        # bounds
+        if not (0 <= nx < COLS and 0 <= ny < ROWS):
+            fail("Out of bounds!")
+            return
+
+        # wall collision
+        if (nx, ny) in walls:
+            show_error("Error: Hit a wall! Try a different direction.")
+            return
+
+        # update
+        error_display.clear()  # Clear any error message on successful move
+        player_gx, player_gy = nx, ny
+        sx, sy = grid_to_screen(nx, ny)
+        player.goto(sx, sy)
+        wn.update()
+        time.sleep(0.08)
+
+    # Public movement commands
+    def move_up():    attempt_move(0, -1)
+    def move_down():  attempt_move(0, 1)
+    def move_left():  attempt_move(-1, 0)
+    def move_right(): attempt_move(1, 0)
+
+    # Setup maze
+    setup_maze(maze)
+
+    # Return everything to user
+    return player, wn, move_up, move_down, move_left, move_right, end
+
+# Initialize game
+player, wn, move_up, move_down, move_left, move_right, end = start_game()
+`;
+    
+    pyodide.runPython(BASE_CODE);
+    gameInitialized = true;
+  }
+  
+  // Preload Pyodide on page load
+  initPyodide().catch(err => {
+    console.error("Failed to load Pyodide:", err);
+    statusDiv.textContent = "❌ Failed to load Python runtime: " + err.message;
+    statusDiv.style.color = "var(--error)";
+  });
+
   /* -------- IMAGE MODAL FUNCTIONALITY -------- */
   const mazePreview = document.getElementById("mazePreview");
   const mazeImage = document.getElementById("mazeImage");
@@ -855,7 +1377,15 @@ move_down()
 # Continue with your solution...
 `);
 
-  const statusDiv = document.getElementById("status");
+  // Close turtle canvas
+  closeTurtleBtn.addEventListener("click", () => {
+    turtleContainer.style.display = "none";
+    if (pyodide) {
+      try {
+        pyodide.runPython("wn.bye()");
+      } catch(e) {}
+    }
+  });
 
   // ----- idle messages (before first run) -----
   let hasRun = false;
@@ -925,25 +1455,45 @@ move_down()
     statusDiv.style.color = "var(--accent-tertiary)";
 
     try {
-      const response = await fetch("/run", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
-
-      const result = await response.json();
-      
-      if (response.ok) {
-        statusDiv.textContent = "✅ " + result.message;
-        statusDiv.style.color = "var(--success)";
-      } else {
-        statusDiv.textContent = "❌ Error: " + result.message;
-        statusDiv.style.color = "var(--error)";
+      // Ensure Pyodide is loaded
+      if (!pyodideReady) {
+        await initPyodide();
       }
+      
+      // Initialize/reset game
+      await initGame();
+      
+      // Show turtle canvas
+      turtleContainer.style.display = "block";
+      
+      // Execute user code
+      const userCode = code;
+      const checkCode = `
+# User code
+${userCode}
+
+# Check if goal reached
+goal_x = 24 * TILE_SIZE + START_X
+goal_y = START_Y - 13 * TILE_SIZE
+if abs(player.xcor() - goal_x) < 1 and abs(player.ycor() - goal_y) < 1:
+    wn.title("You reached the goal! 🎉")
+    print("✅ You reached the goal! 🎉")
+else:
+    wn.title("Did NOT reach the goal. Try again!")
+    print("❌ Did NOT reach the goal. Try again!")
+
+wn.mainloop()
+`;
+      
+      pyodide.runPython(checkCode);
+      
+      statusDiv.textContent = "✅ Code is running! Check the maze game above.";
+      statusDiv.style.color = "var(--success)";
 
     } catch (err) {
-      statusDiv.textContent = "❌ Connection error: " + err.message;
+      statusDiv.textContent = "❌ Error: " + err.message;
       statusDiv.style.color = "var(--error)";
+      console.error(err);
     }
   });
 
@@ -1000,25 +1550,44 @@ move_down()
     statusDiv.style.color = "var(--accent-tertiary)";
 
     try {
-      const response = await fetch("/run", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: code2 }),
-      });
-
-      const result = await response.json();
-      
-      if (response.ok) {
-        statusDiv.textContent = "✅ Level 2 running...";
-        statusDiv.style.color = "var(--success)";
-      } else {
-        statusDiv.textContent = "❌ Error: " + result.message;
-        statusDiv.style.color = "var(--error)";
+      // Ensure Pyodide is loaded
+      if (!pyodideReady) {
+        await initPyodide();
       }
+      
+      // Initialize/reset game
+      await initGame();
+      
+      // Show turtle canvas
+      turtleContainer.style.display = "block";
+      
+      // Execute user code
+      const checkCode = `
+# User code
+${code2}
+
+# Check if goal reached
+goal_x = 24 * TILE_SIZE + START_X
+goal_y = START_Y - 13 * TILE_SIZE
+if abs(player.xcor() - goal_x) < 1 and abs(player.ycor() - goal_y) < 1:
+    wn.title("You reached the goal! 🎉")
+    print("✅ You reached the goal! 🎉")
+else:
+    wn.title("Did NOT reach the goal. Try again!")
+    print("❌ Did NOT reach the goal. Try again!")
+
+wn.mainloop()
+`;
+      
+      pyodide.runPython(checkCode);
+      
+      statusDiv.textContent = "✅ Level 2 running! Check the maze game above.";
+      statusDiv.style.color = "var(--success)";
 
     } catch (err) {
-      statusDiv.textContent = "❌ Connection error: " + err.message;
+      statusDiv.textContent = "❌ Error: " + err.message;
       statusDiv.style.color = "var(--error)";
+      console.error(err);
     }
   });
 
